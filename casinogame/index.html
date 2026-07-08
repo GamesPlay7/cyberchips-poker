@@ -30,44 +30,43 @@
                 column-gap: 15px !important;
             }
 
-            /* Повний скид absolute для ВСІХ елементів всередині столу */
+            /* Жорсткий скид absolute для ВСІХ блоків ботів всередині столу */
             .poker-table > div {
                 position: static !important;
                 transform: none !important;
-            }
-
-            /* Загальні мобільні стилі для карток ботів */
-            .poker-table > div:nth-child(1),
-            .poker-table > div:nth-child(2),
-            .poker-table > div:nth-child(3) {
                 width: 100% !important;
                 max-width: 135px !important;
                 padding: 8px !important;
                 font-size: 12px !important;
             }
 
-            /* РЯД 1: Бот 2 (Профі) — Жорстко розтягуємо на 2 колонки і центруємо */
-            .poker-table > div:nth-child(2) {
+            /* ШУКАЄМО БОТІВ ЗА ТЕКСТОМ У КЛАСАХ АБО СТАТУСАХ */
+            
+            /* 1. БОТ 2 (Профі) — Шукаємо блок, який містить статус bot2 або колір тексту */
+            .poker-table > div:has([id*="bot2"]),
+            .poker-table > div:has(.text-blue-400) {
                 grid-row: 1 !important;
-                grid-column: 1 / span 2 !important; /* займає весь рядок */
-                justify-self: center !important; /* чітко по центру */
+                grid-column: 1 / span 2 !important; /* жорстко на 2 колонки */
+                justify-self: center !important;   /* чітко по центру столу */
             }
 
-            /* РЯД 2: Бот 1 (Агресор) — Нижня ліва вершина трикутника */
-            .poker-table > div:nth-child(1) {
+            /* 2. БОТ 1 (Агресор) — Лівий нижній кут трикутника */
+            .poker-table > div:has([id*="bot1"]),
+            .poker-table > div:has(.text-red-400) {
                 grid-row: 2 !important;
                 grid-column: 1 !important;
                 justify-self: center !important;
             }
 
-            /* РЯД 2: Бот 3 (Рандом) — Нижня права вершина трикутника */
-            .poker-table > div:nth-child(3) {
+            /* 3. БОТ 3 (Рандом) — Правий нижній кут трикутника */
+            .poker-table > div:has([id*="bot3"]),
+            .poker-table > div:has(.text-purple-400) {
                 grid-row: 2 !important;
                 grid-column: 2 !important;
                 justify-self: center !important;
             }
 
-            /* РЯД 3: КАРТИ СТОЛУ — В самому низу під усім трикутником */
+            /* 4. КАРТИ СТОЛУ (блок з класом flex) — В самому низу під трикутником */
             .poker-table .flex {
                 grid-row: 3 !important;
                 grid-column: span 2 !important;
