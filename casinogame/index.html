@@ -14,56 +14,54 @@
 
         /* --- АДАПТАЦІЯ ДЛЯ СМАРТФОНІВ --- */
         @media (max-width: 768px) {
-            /* Зменшуємо сам покерний стіл, щоб влізав у екран смартфона */
+            /* Робимо стіл сіткою (Grid) на мобілках */
             .poker-table {
                 width: 95% !important;
-                height: 380px !important;
-                min-height: 380px !important;
-                margin: 15px auto !important;
-                position: relative !important;
-                border: 10px solid #3d2314 !important; /* трохи тонша рамка на мобах */
-                border-radius: 40px !important; /* робимо закруглення акуратнішим */
+                height: auto !important;
+                min-height: 420px !important;
+                margin: 10px auto !important;
+                border: 10px solid #3d2314 !important;
+                border-radius: 40px !important;
+                padding: 16px !important;
+                
+                display: grid !important;
+                grid-template-columns: repeat(3, 1fr) !important;
+                grid-template-rows: auto 1fr !important;
+                gap: 10px !important;
             }
 
-            /* Зменшуємо карти на столі (Флоп, Терн, Рівер) */
+            /* Рівняємо трьох ботів у верхній рядок сітки */
+            .poker-table > div:nth-child(1),
+            .poker-table > div:nth-child(2),
+            .poker-table > div:nth-child(3) {
+                position: static !important;
+                transform: none !important;
+                width: 100% !important;
+                max-width: 110px !important;
+                padding: 6px !important;
+                font-size: 11px !important;
+                justify-self: center !important;
+            }
+
+            /* Карти столу (Флоп, Терн, Рівер) кидаємо на рядок нижче чітко по центру */
             .poker-table .flex {
+                grid-column: span 3 !important;
+                justify-self: center !important;
+                align-self: center !important;
+                margin-top: 30px !important;
+                background: rgba(0, 0, 0, 0.4) !important;
+                padding: 8px !important;
                 gap: 4px !important;
             }
+
+            /* Зменшуємо карти на столі, щоб вони 100% влізли в екран смартфона */
             .poker-table .w-14.h-20 {
-                width: 38px !important;
-                height: 55px !important;
+                width: 42px !important;
+                height: 60px !important;
                 font-size: 14px !important;
             }
             .poker-table .text-2xl {
-                font-size: 1.25rem !important; /* зменшуємо значки мастей */
-            }
-
-            /* Розставляємо ботів по краях екрану, щоб вони не лізли в центр */
-            /* Бот 1 (Агресор) — зліва */
-            .poker-table > div:nth-child(1) {
-                left: 10px !important;
-                top: 45% !important;
-                transform: translateY(-50%) !important;
-                padding: 6px !important;
-                font-size: 12px !important;
-            }
-
-            /* Бот 2 (Профі) — зверху по центру */
-            .poker-table > div:nth-child(2) {
-                left: 50% !important;
-                top: 10px !important;
-                transform: translateX(-50%) !important;
-                padding: 6px !important;
-                font-size: 12px !important;
-            }
-
-            /* Бот 3 (Рандом) — справа */
-            .poker-table > div:nth-child(3) {
-                right: 10px !important;
-                top: 45% !important;
-                transform: translateY(-50%) !important;
-                padding: 6px !important;
-                font-size: 12px !important;
+                font-size: 1.1rem !important;
             }
         }
     </style>
