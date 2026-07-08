@@ -4,6 +4,21 @@ let deck = [];
 const suits = ['♠', '♥', '♦', '♣'];
 const values = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
 
+// Стани ставок та раунду
+let currentPot = 0;          // Поточний загальний банк
+let currentBet = 0;          // Максимальна ставка в поточному колі (яку треба зрівняти)
+let botStacks = {            // Баланси ботів
+    bot1: 1000,
+    bot2: 1000,
+    bot3: 1000
+};
+let activePlayers = {        // Хто ще в грі (якщо false - гравець зробив Fold)
+    player: true,
+    bot1: true,
+    bot2: true,
+    bot3: true
+};
+
 // 1. Функція створення нової колоди (52 карти)
 function createDeck() {
     deck = [];
@@ -304,4 +319,122 @@ function startNewRound() {
 // Допоміжна функція для кольору масті (червоний для чирви/бубни)
 function getCardColor(suit) {
     return (suit === '♥' || suit === '♦') ? 'text-red-500' : 'text-black';
+}
+// Чекаємо завантаження сторінки, щоб прив'язати кліки до кнопок HTML
+document.addEventListener("DOMContentLoaded", () => {
+    
+    // Кнопка CHECK / CALL
+    document.getElementById('btn-check').addEventListener('click', () => {
+        if (!activePlayers.player) return; // якщо ти вже в пас, нічого не робимо
+
+        if (currentBet === 0) {
+            // Якщо ніхto не ставив — це просто Check (безкоштовний хід)
+            updateGameLog("😎 Ти сказав <b>Check</b> (Пропуск ходу).");
+        } else {
+            // Якщо є ставка — це Call (зрівнювання)
+            let callAmount = currentBet;
+            if (userChips >= callAmount) {
+                userChips -= callAmount;
+                currentPot += callAmount;
+                updateGameLog(`😎 Ти сказав <b>Call</b> і зрівняв ставку ${callAmount}$.`);
+            } else {
+                // All-in якщо не вистачає фішок
+                currentPot += userChips;
+                updateGameLog(`😎 Ти поставив останні <b>${userChips}$ (All-in)!</b>`);
+                userChips = 0;
+            }
+        }
+        
+        updateTableUI(); // оновлюємо цифри на екрані
+        
+        // Після твого ходу — запускаємо хід ботів!
+        setTimeout(startBotTurns, 1500);
+    });
+
+});
+
+// ==========================================
+// ВСТАВЛЯЙ ЦЕ В САМИЙ КІНЕЦЬ ФАЙЛУ SCRIPT.JS
+// ==========================================
+
+// --- Крок 2: Функція оновлення банку та стеків на екрані ---
+function updateTableUI() {
+    // Оновлюємо банк (POT) угорі
+    document.getElementById('total-pot').innerText = currentPot + "$";
+    
+    // Оновлюємо баланс гравця внизу
+    document.getElementById('player-display-chips').innerText = userChips + "$";
+    
+    // Оновлюємо баланси ботів на столі
+    document.querySelector('#bot1-status').nextElementSibling.innerText = botStacks.bot1 + "$";
+    document.querySelector('#bot2-status').nextElementSibling.innerText = botStacks.bot2 + "$";
+    document.querySelector('#bot3-status').nextElementSibling.innerText = botStacks.bot3 + "$";
+}
+
+// --- Крок 3: Обробник натискання кнопки Check / Call ---
+document.addEventListener("DOMContentLoaded", () => {
+    
+    document.getElementById('btn-check').addEventListener('click', () => {
+        if (!activePlayers.player) return; 
+
+        if (currentBet === 0) {
+            updateGameLog("😎 Ти сказав <b>Check</b> (Пропуск ходу).");
+        } else {
+            let callAmount = currentBet;
+            if (userChips >= callAmount) {
+                userChips -= callAmount;
+                currentPot += callAmount;
+                updateGameLog(`😎 Ти сказав <b>Call</b> і зрівняв ставку ${callAmount}$.`);
+            } else {
+                currentPot += userChips;
+                updateGameLog(`😎 Ти поставив останні <b>${userChips}$ (All-in)!</b>`);
+                userChips = 0;
+            }
+        }
+        
+        updateTableUI(); 
+        
+        setTimeout(startBotTurns, 1500);
+    });
+
+});
+
+// --- Крок 4: Логіка ходу ботів ---
+function startBotTurns() {
+    // Хід Бота 1 (Агресор)
+    if (activePlayers.bot1) {
+        document.getElementById('bot1-status').innerText = "Ставить...";
+        
+        setTimeout(() => {
+            let raiseAmount = 50; 
+            botStacks.bot1 -= raiseAmount;
+            currentPot += raiseAmount;
+            currentBet = raiseAmount; 
+            
+            document.getElementById('bot1-status').innerText = "Bet: 50$";
+            if (typeof triggerBotSpeech === "function") {
+                triggerBotSpeech('bot1', '🔥 Піднімаю до 50$! Хто в грі?', 3000);
+            }
+            updateGameLog("🤖 <b>Бот 1 (Агр)</b> поставив Bet: 50$.");
+            updateTableUI();
+        }, 1000);
+    }
+
+    // Хід Бота 2 (Профі)
+    setTimeout(() => {
+        if (activePlayers.bot2) {
+            document.getElementById('bot2-status').innerText = "Думає...";
+            setTimeout(() => {
+                botStacks.bot2 -= currentBet;
+                currentPot += currentBet;
+                
+                document.getElementById('bot2-status').innerText = "Call";
+                if (typeof triggerBotSpeech === "function") {
+                    triggerBotSpeech('bot2', 'Я в грі, підтримумую.', 3000);
+                }
+                updateGameLog("🤖 <b>Бот 2 (Профі)</b> сказав Call.");
+                updateTableUI();
+            }, 1000);
+        }
+    }, 2500); 
 }
