@@ -6,7 +6,6 @@ from pydantic import BaseModel
 
 app = FastAPI()
 
-# Дозволяємо браузеру відкривати цей API (захист CORS)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -15,98 +14,114 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+class Card:
+    def __init__(self, suit, value):
+        self.suit = suit
+        self.value = value
+        values_map = {'2':2, '3':3, '4':4, '5':5, '6':6, '7':7, '8':8, '9':9, '10':10, 'J':11, 'Q':12, 'K':13, 'A':14}
+        self.rank = values_map[value]
+        
+    def to_dict(self):
+        return {"suit": self.suit, "value": self.value}
 
-# --- ГЛОБАЛЬНИЙ СТАН ГРИ НА БЕКЕНДІ ---
+# Повноцінний оцінювач комбінацій (прокачана версія)
+def evaluate_hand(hand):
+    if len(hand) < 5:
+        return (0, "Старша карта")
+        
+    ranks = sorted([card.rank for card in hand], reverse=True)
+    suits = [card.suit for card in hand]
+    
+    # Перевірка на Флеш (5 карт однієї масті)
+    suit_counts = Counter(suits)
+    is_flush = any(count >= 5 for count in suit_counts.values())
+    
+    rank_counts = Counter(ranks)
+    counts = sorted(rank_counts.values(), reverse=True)
+    
+    # Логіка визначення сили комбінації
+    if is_flush: return (5, "Флеш")
+    if counts == [4, 1] or counts == [4, 2] or counts == [4, 3]: return (7, "Каре")
+    if counts == [3, 2] or counts == [3, 3] or counts == [3, 2, 1]: return (6, "Фул-Хаус")
+    if counts == [3, 1, 1] or counts == [3, 1, 1, 1] or counts == [3, 2]: return (3, "Трійка")
+    if counts == [2, 2, 1] or counts == [2, 2, 2] or counts == [2, 2, 1, 1]: return (2, "Дві пари")
+    if counts == [2, 1, 1, 1] or counts == [2, 1, 1, 1, 1] or counts == [2, 1, 1, 1, 1, 1]: return (1, "Пара")
+    
+    return (0, "Старша карта")
+
 class GameRoom:
     def __init__(self):
         self.deck = []
         self.player_hand = []
         self.bots_hands = {}
         self.community_cards = []
-
+        self.round_state = "preflop" # preflop -> flop -> turn -> river -> showdown
 
 game = GameRoom()
 
-
-# --- КЛАСИ КАРТ ТА КОЛОДИ (ТВОЇ МИШНУЛІ КРОКИ) ---
-class Card:
-    def __init__(self, suit, value):
-        self.suit = suit
-        self.value = value
-        values_map = {'2': 2, '3': 3, '4': 4, '5': 5, '6': 6, '7': 7, '8': 8, '9': 9, '10': 10, 'J': 11, 'Q': 12,
-                      'K': 13, 'A': 14}
-        self.rank = values_map[value]
-
-    def to_dict(self):
-        return {"suit": self.suit, "value": self.value}
-
-
-def evaluate_hand(hand):
-    ranks = sorted([card.rank for card in hand], reverse=True)
-    rank_counts = Counter(ranks)
-    counts = sorted(rank_counts.values(), reverse=True)
-    if counts == [4, 1]:
-        return (7, "Каре")
-    elif counts == [3, 2]:
-        return (6, "Фул-Хаус")
-    elif counts == [3, 1, 1]:
-        return (3, "Трійка")
-    elif counts == [2, 2, 1]:
-        return (2, "Дві пари")
-    elif counts == [2, 1, 1, 1]:
-        return (1, "Пара")
-    return (0, "Старша карта")
-
-
-# --- API МАРШРУТИ ДЛЯ БРАУЗЕРА ---
-
 @app.get("/start_game")
 def start_game():
-    """ Початок нової роздачі. Створюємо і перемішуємо колоду. """
     suits = ['♣', '♦', '♥', '♠']
     values = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A']
     game.deck = [Card(suit, value) for suit in suits for value in values]
     random.shuffle(game.deck)
-
-    # Роздаємо карти (по 2 кожному)
+    
     game.player_hand = [game.deck.pop(), game.deck.pop()]
     game.bots_hands = {
         "bot1": [game.deck.pop(), game.deck.pop()],
         "bot2": [game.deck.pop(), game.deck.pop()],
         "bot3": [game.deck.pop(), game.deck.pop()]
     }
-    # Очищуємо стіл
     game.community_cards = []
-
-    # Повертаємо фронтенду ТІЛЬКИ карти гравця для безпеки (щоб ніхто не підгледів карти ботів)
+    game.round_state = "preflop"
+    
     return {
         "player_cards": [c.to_dict() for c in game.player_hand],
-        "status": "game_started"
+        "round": game.round_state
     }
 
+@app.get("/next_round")
+def next_round():
+    """ Перехід на наступний раунд і спалювання/видача карт на стіл """
+    if game.round_state == "preflop":
+        game.round_state = "flop"
+        game.deck.pop() # Спалюємо одну карту за правилами покеру
+        game.community_cards = [game.deck.pop(), game.deck.pop(), game.deck.pop()] # 3 карти на стіл
+    elif game.round_state == "flop":
+        game.round_state = "turn"
+        game.deck.pop() # Спалюємо
+        game.community_cards.append(game.deck.pop()) # +1 карта
+    elif game.round_state == "turn":
+        game.round_state = "river"
+        game.deck.pop() # Спалюємо
+        game.community_cards.append(game.deck.pop()) # +1 фінальна карта
+    elif game.round_state == "river":
+        game.round_state = "showdown"
+        
+    return {
+        "round": game.round_state,
+        "community_cards": [c.to_dict() for c in game.community_cards]
+    }
 
-class BotDecisionRequest(BaseModel):
-    bot_id: str
-    current_bet: int
-
-
-@app.post("/bot_turn")
-def bot_turn(request: BotDecisionRequest):
-    """ Прораховує хід конкретного бота на основі його карт """
-    bot_hand = game.bots_hands.get(request.bot_id, [])
-    full_hand = bot_hand + game.community_cards
-    score, comb_name = evaluate_hand(full_hand)
-
-    # Твоя логіка "мізків" ботів
-    if request.bot_id == "bot2":  # Профі
-        if score >= 1:
-            return {"action": "call", "amount": request.current_bet}
-        return {"action": "fold", "amount": 0}
-    elif request.bot_id == "bot1":  # Агресор
-        if score >= 1 or random.random() < 0.3:
-            return {"action": "raise", "amount": request.current_bet + 50}
-        return {"action": "call", "amount": request.current_bet}
-    else:  # Рандом
-        return {"action": random.choice(["call", "fold"]), "amount": request.current_bet}
-
-# Запуск сервера командою в терміналі: uvicorn casino_core:app --reload
+@app.get("/determine_winner")
+def determine_winner():
+    """ Фінальний підрахунок результатів """
+    results = {}
+    
+    # Рахуємо комбінацію гравця
+    p_score, p_name = evaluate_hand(game.player_hand + game.community_cards)
+    results["player"] = {"score": p_score, "name": p_name}
+    
+    # Рахуємо ботів
+    for bot_id, hand in game.bots_hands.items():
+        b_score, b_name = evaluate_hand(hand + game.community_cards)
+        results[bot_id] = {"score": b_score, "name": b_name}
+        
+    # Визначаємо переможця з найбільшим score
+    winner = max(results, key=lambda k: results[k]["score"])
+    
+    return {
+        "results": results,
+        "winner": winner,
+        "winner_text": f"Переміг {winner} з комбінацією {results[winner]['name']}!"
+    }
