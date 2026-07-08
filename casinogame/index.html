@@ -11,6 +11,15 @@
             border: 16px solid #3d2314;
             box-shadow: inset 0 0 40px rgba(0,0,0,0.6);
         }
+
+        /* ОНОВЛЕНО: Анімація появи карт, яка спрацьовує рівно 2 рази */
+        @keyframes cardBounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-12px); }
+        }
+        .animate-card-appear {
+            animation: cardBounce 0.5s ease-in-out 2;
+        }
     </style>
 </head>
 <body class="bg-gray-900 text-white font-sans min-h-screen flex flex-col justify-between overflow-x-hidden">
@@ -89,12 +98,12 @@
                 <div class="text-xs md:text-sm text-yellow-500">1000$</div>
             </div>
 
-            <div class="absolute left-1/2 -translate-x-1/2 top-[260px] md:top-1/2 md:-translate-y-1/2 flex gap-1 sm:gap-2 bg-black/40 p-2 rounded-xl border border-white/5 z-0">
-                <div class="w-10 h-14 sm:w-14 sm:h-20 bg-white/10 rounded-md border border-dashed border-white/30 flex items-center justify-center text-gray-500 text-[10px] sm:text-xs">Flop 1</div>
-                <div class="w-10 h-14 sm:w-14 sm:h-20 bg-white/10 rounded-md border border-dashed border-white/30 flex items-center justify-center text-gray-500 text-[10px] sm:text-xs">Flop 2</div>
-                <div class="w-10 h-14 sm:w-14 sm:h-20 bg-white/10 rounded-md border border-dashed border-white/30 flex items-center justify-center text-gray-500 text-[10px] sm:text-xs">Flop 3</div>
-                <div class="w-10 h-14 sm:w-14 sm:h-20 bg-white/10 rounded-md border border-dashed border-white/30 flex items-center justify-center text-gray-500 text-[10px] sm:text-xs">Turn</div>
-                <div class="w-10 h-14 sm:w-14 sm:h-20 bg-white/10 rounded-md border border-dashed border-white/30 flex items-center justify-center text-gray-500 text-[10px] sm:text-xs">River</div>
+            <div id="community-cards" class="absolute left-1/2 -translate-x-1/2 top-[260px] md:top-1/2 md:-translate-y-1/2 flex gap-1 sm:gap-2 bg-black/40 p-2 rounded-xl border border-white/5 z-0">
+                <div class="w-10 h-14 sm:w-14 sm:h-20 bg-white/10 rounded-md border border-dashed border-white/30 flex items-center justify-center text-gray-500 text-[10px] sm:text-xs transition-all">Flop 1</div>
+                <div class="w-10 h-14 sm:w-14 sm:h-20 bg-white/10 rounded-md border border-dashed border-white/30 flex items-center justify-center text-gray-500 text-[10px] sm:text-xs transition-all">Flop 2</div>
+                <div class="w-10 h-14 sm:w-14 sm:h-20 bg-white/10 rounded-md border border-dashed border-white/30 flex items-center justify-center text-gray-500 text-[10px] sm:text-xs transition-all">Flop 3</div>
+                <div class="w-10 h-14 sm:w-14 sm:h-20 bg-white/10 rounded-md border border-dashed border-white/30 flex items-center justify-center text-gray-500 text-[10px] sm:text-xs transition-all">Turn</div>
+                <div class="w-10 h-14 sm:w-14 sm:h-20 bg-white/10 rounded-md border border-dashed border-white/30 flex items-center justify-center text-gray-500 text-[10px] sm:text-xs transition-all">River</div>
             </div>
 
         </div>

@@ -270,6 +270,7 @@ function initBotGreetings() {
 }
 
 // 3. Запуск нового раунду роздачі
+// Оновлена функція роздачі у твойому script.js
 function startNewRound() {
     createDeck();
     shuffleDeck();
@@ -280,11 +281,16 @@ function startNewRound() {
     const playerCard1 = deck.pop();
     const playerCard2 = deck.pop();
 
-    // Відображаємо карти гравця на екрані (у футері)
+    // Відображаємо карти гравця на екрані
     const playerCardElements = document.getElementById('player-cards').children;
     if (playerCardElements.length >= 2) {
+        // Оновлюємо контент
         playerCardElements[0].innerHTML = `<span class="${getCardColor(playerCard1.suit)}">${playerCard1.value}${playerCard1.suit}</span>`;
         playerCardElements[1].innerHTML = `<span class="${getCardColor(playerCard2.suit)}">${playerCard2.value}${playerCard2.suit}</span>`;
+        
+        // Вішаємо анімацію, яка підстрибне рівно 2 рази і затихне
+        playerCardElements[0].classList.add('animate-card-appear');
+        playerCardElements[1].classList.add('animate-card-appear');
     }
 
     // Змінюємо статус ботів на активний
