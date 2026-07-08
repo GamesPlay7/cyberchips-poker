@@ -11,81 +11,6 @@
             border: 16px solid #3d2314;
             box-shadow: inset 0 0 40px rgba(0,0,0,0.6);
         }
-
-        /* --- ІДЕАЛЬНА ТРИКУТНА СІТКА ДЛЯ МОБІЛОК --- */
-        @media (max-width: 768px) {
-            .poker-table {
-                width: 95% !important;
-                height: auto !important;
-                min-height: 440px !important;
-                margin: 10px auto !important;
-                border: 10px solid #3d2314 !important;
-                border-radius: 40px !important;
-                padding: 20px 10px !important;
-                
-                display: grid !important;
-                grid-template-columns: 1fr 1fr !important; /* дві рівні колонки */
-                grid-template-rows: auto auto auto !important;
-                row-gap: 20px !important;
-                column-gap: 15px !important;
-            }
-
-            /* Жорсткий скид absolute для ВСІХ блоків ботів всередині столу */
-            .poker-table > div {
-                position: static !important;
-                transform: none !important;
-                width: 100% !important;
-                max-width: 135px !important;
-                padding: 8px !important;
-                font-size: 12px !important;
-            }
-
-            /* ШУКАЄМО БОТІВ ЗА ТЕКСТОМ У КЛАСАХ АБО СТАТУСАХ */
-            
-            /* 1. БОТ 2 (Профі) — Шукаємо блок, який містить статус bot2 або колір тексту */
-            .poker-table > div:has([id*="bot2"]),
-            .poker-table > div:has(.text-blue-400) {
-                grid-row: 1 !important;
-                grid-column: 1 / span 2 !important; /* жорстко на 2 колонки */
-                justify-self: center !important;   /* чітко по центру столу */
-            }
-
-            /* 2. БОТ 1 (Агресор) — Лівий нижній кут трикутника */
-            .poker-table > div:has([id*="bot1"]),
-            .poker-table > div:has(.text-red-400) {
-                grid-row: 2 !important;
-                grid-column: 1 !important;
-                justify-self: center !important;
-            }
-
-            /* 3. БОТ 3 (Рандом) — Правий нижній кут трикутника */
-            .poker-table > div:has([id*="bot3"]),
-            .poker-table > div:has(.text-purple-400) {
-                grid-row: 2 !important;
-                grid-column: 2 !important;
-                justify-self: center !important;
-            }
-
-            /* 4. КАРТИ СТОЛУ (блок з класом flex) — В самому низу під трикутником */
-            .poker-table .flex {
-                grid-row: 3 !important;
-                grid-column: span 2 !important;
-                justify-self: center !important;
-                align-self: center !important;
-                margin-top: 15px !important;
-                background: rgba(0, 0, 0, 0.4) !important;
-                padding: 8px !important;
-                gap: 4px !important;
-                display: flex !important;
-            }
-
-            /* Розміри карт на телефоні */
-            .poker-table .w-14.h-20 {
-                width: 42px !important;
-                height: 60px !important;
-                font-size: 14px !important;
-            }
-        }
     </style>
 </head>
 <body class="bg-gray-900 text-white font-sans min-h-screen flex flex-col justify-between">
@@ -97,33 +22,33 @@
         </div>
     </header>
 
-    <main class="flex-grow flex items-center justify-center p-4">
-        <div class="poker-table w-full max-w-4xl h-[450px] rounded-[150px] relative flex flex-col items-center justify-center">
+    <main class="flex-grow flex items-center justify-center p-2 sm:p-4">
+        <div class="poker-table w-full max-w-4xl rounded-[40px] md:rounded-[150px] relative p-4 md:p-0 grid grid-cols-2 md:flex md:flex-col items-center justify-center gap-4 md:gap-0 min-h-[460px] md:h-[450px]">
             
-            <div class="absolute left-6 top-1/2 -translate-y-1/2 text-center bg-black/40 p-3 rounded-lg border border-red-500/30">
-                <div class="font-bold text-red-400">🤖 Бот 1 (Агресор)</div>
+            <div class="order-2 md:absolute md:left-6 md:top-1/2 md:-translate-y-1/2 text-center bg-black/40 p-2 md:p-3 rounded-lg border border-red-500/30 w-full max-w-[135px] md:max-w-none justify-self-center">
+                <div class="font-bold text-sm md:text-base text-red-400">🤖 Бот 1 (Агресор)</div>
                 <div id="bot1-status" class="text-xs text-gray-400 italic">Чекає...</div>
                 <div class="text-sm text-yellow-500">Chips: 1000$</div>
             </div>
 
-            <div class="absolute top-4 left-1/2 -translate-x-1/2 text-center bg-black/40 p-3 rounded-lg border border-blue-500/30">
-                <div class="font-bold text-blue-400">🤖 Бот 2 (Профі)</div>
+            <div class="order-1 col-span-2 md:absolute md:top-4 md:left-1/2 md:-translate-x-1/2 text-center bg-black/40 p-2 md:p-3 rounded-lg border border-blue-500/30 w-full max-w-[135px] md:max-w-none justify-self-center">
+                <div class="font-bold text-sm md:text-base text-blue-400">🤖 Бот 2 (Профі)</div>
                 <div id="bot2-status" class="text-xs text-gray-400 italic">Чекає...</div>
                 <div class="text-sm text-yellow-500">Chips: 1000$</div>
             </div>
 
-            <div class="absolute right-6 top-1/2 -translate-y-1/2 text-center bg-black/40 p-3 rounded-lg border border-purple-500/30">
-                <div class="font-bold text-purple-400">🤖 Бот 3 (Рандом)</div>
+            <div class="order-3 md:absolute md:right-6 md:top-1/2 md:-translate-y-1/2 text-center bg-black/40 p-2 md:p-3 rounded-lg border border-purple-500/30 w-full max-w-[135px] md:max-w-none justify-self-center">
+                <div class="font-bold text-sm md:text-base text-purple-400">🤖 Бот 3 (Рандом)</div>
                 <div id="bot3-status" class="text-xs text-gray-400 italic">Чекає...</div>
                 <div class="text-sm text-yellow-500">Chips: 1000$</div>
             </div>
 
-            <div class="flex gap-2 bg-black/20 p-4 rounded-xl border border-white/5">
-                <div class="w-14 h-20 bg-white/10 rounded-md border border-dashed border-white/30 flex items-center justify-center text-gray-500 text-xs">Flop 1</div>
-                <div class="w-14 h-20 bg-white/10 rounded-md border border-dashed border-white/30 flex items-center justify-center text-gray-500 text-xs">Flop 2</div>
-                <div class="w-14 h-20 bg-white/10 rounded-md border border-dashed border-white/30 flex items-center justify-center text-gray-500 text-xs">Flop 3</div>
-                <div class="w-14 h-20 bg-white/10 rounded-md border border-dashed border-white/30 flex items-center justify-center text-gray-500 text-xs">Turn</div>
-                <div class="w-14 h-20 bg-white/10 rounded-md border border-dashed border-white/30 flex items-center justify-center text-gray-500 text-xs">River</div>
+            <div class="order-4 col-span-2 md:absolute flex gap-1 sm:gap-2 bg-black/30 p-2 sm:p-4 rounded-xl border border-white/5 justify-self-center mt-4 md:mt-0">
+                <div class="w-10 h-14 sm:w-14 sm:h-20 bg-white/10 rounded-md border border-dashed border-white/30 flex items-center justify-center text-gray-500 text-[10px] sm:text-xs">Flop 1</div>
+                <div class="w-10 h-14 sm:w-14 sm:h-20 bg-white/10 rounded-md border border-dashed border-white/30 flex items-center justify-center text-gray-500 text-[10px] sm:text-xs">Flop 2</div>
+                <div class="w-10 h-14 sm:w-14 sm:h-20 bg-white/10 rounded-md border border-dashed border-white/30 flex items-center justify-center text-gray-500 text-[10px] sm:text-xs">Flop 3</div>
+                <div class="w-10 h-14 sm:w-14 sm:h-20 bg-white/10 rounded-md border border-dashed border-white/30 flex items-center justify-center text-gray-500 text-[10px] sm:text-xs">Turn</div>
+                <div class="w-10 h-14 sm:w-14 sm:h-20 bg-white/10 rounded-md border border-dashed border-white/30 flex items-center justify-center text-gray-500 text-[10px] sm:text-xs">River</div>
             </div>
 
         </div>
