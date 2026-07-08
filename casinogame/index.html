@@ -23,12 +23,11 @@
                 border-radius: 40px !important;
                 padding: 20px 10px !important;
                 
-                /* Вмикаємо Grid і ламаємо Tailwind класи absolute */
                 display: grid !important;
-                grid-template-columns: repeat(2, 1fr) !important;
+                grid-template-columns: 1fr 1fr !important; /* дві рівні колонки */
                 grid-template-rows: auto auto auto !important;
-                row-gap: 25px !important;
-                column-gap: 10px !important;
+                row-gap: 20px !important;
+                column-gap: 15px !important;
             }
 
             /* Повний скид absolute для ВСІХ елементів всередині столу */
@@ -47,38 +46,38 @@
                 font-size: 12px !important;
             }
 
-            /* РЯД 1: Бот 2 (Профі) — Чітко зверху по центру на дві колонки */
+            /* РЯД 1: Бот 2 (Профі) — Жорстко розтягуємо на 2 колонки і центруємо */
             .poker-table > div:nth-child(2) {
                 grid-row: 1 !important;
-                grid-column: span 2 !important;
-                justify-self: center !important;
+                grid-column: 1 / span 2 !important; /* займає весь рядок */
+                justify-self: center !important; /* чітко по центру */
             }
 
-            /* РЯД 2: Бот 1 (Агресор) — Нижче під Бот 2, ліворуч */
+            /* РЯД 2: Бот 1 (Агресор) — Нижня ліва вершина трикутника */
             .poker-table > div:nth-child(1) {
                 grid-row: 2 !important;
                 grid-column: 1 !important;
                 justify-self: center !important;
             }
 
-            /* РЯД 2: Бот 3 (Рандом) — Нижче під Бот 2, праворуч (навпроти Бот 1) */
+            /* РЯД 2: Бот 3 (Рандом) — Нижня права вершина трикутника */
             .poker-table > div:nth-child(3) {
                 grid-row: 2 !important;
                 grid-column: 2 !important;
                 justify-self: center !important;
             }
 
-            /* РЯД 3: КАРТИ СТОЛУ — В самому низу, під усім трикутником */
+            /* РЯД 3: КАРТИ СТОЛУ — В самому низу під усім трикутником */
             .poker-table .flex {
                 grid-row: 3 !important;
                 grid-column: span 2 !important;
                 justify-self: center !important;
                 align-self: center !important;
-                margin-top: 10px !important;
+                margin-top: 15px !important;
                 background: rgba(0, 0, 0, 0.4) !important;
                 padding: 8px !important;
                 gap: 4px !important;
-                display: flex !important; /* повертаємо флекс для самих карт */
+                display: flex !important;
             }
 
             /* Розміри карт на телефоні */
