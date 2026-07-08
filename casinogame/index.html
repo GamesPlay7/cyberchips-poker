@@ -11,6 +11,68 @@
             border: 16px solid #3d2314;
             box-shadow: inset 0 0 40px rgba(0,0,0,0.6);
         }
+
+        /* --- ЗАЛІЗОБЕТОННИЙ СТИЛЬ ДЛЯ КОМП'ЮТЕРІВ (ПК) --- */
+        @media (min-width: 768px) {
+            /* Повертаємо столу на ПК вигляд класичного овалу */
+            .poker-table {
+                display: block !important;
+                position: relative !important;
+                height: 420px !important;
+                width: 100% !important;
+                max-w: 56rem !important; /* max-w-4xl */
+                border-radius: 150px !important;
+                padding: 0 !important;
+            }
+
+            /* Повертаємо абсолютні координати для ботів на великому столі */
+            
+            /* Бот 1 (Агресор) — зліва по центру */
+            .poker-table > div:nth-child(1) {
+                position: absolute !important;
+                left: 1.5rem !important; /* left-6 */
+                top: 50% !important;
+                transform: translateY(-50%) !important;
+                width: 9rem !important; /* w-36 */
+                max-width: none !important;
+            }
+
+            /* Бот 2 (Профі) — зверху по центру */
+            .poker-table > div:nth-child(2) {
+                position: absolute !important;
+                top: 1rem !important; /* top-4 */
+                left: 50% !important;
+                transform: translateX(-50%) !important;
+                width: 9rem !important;
+                max-width: none !important;
+            }
+
+            /* Бот 3 (Рандом) — справа по центру */
+            .poker-table > div:nth-child(3) {
+                position: absolute !important;
+                right: 1.5rem !important; /* right-6 */
+                top: 50% !important;
+                transform: translateY(-50%) !important;
+                width: 9rem !important;
+                max-width: none !important;
+            }
+
+            /* Карти столу — чітко по центру овалу */
+            .poker-table .flex {
+                position: absolute !important;
+                top: 50% !important;
+                left: 50% !important;
+                transform: translate(-50%, -50%) !important;
+                margin-top: 0 !important;
+            }
+
+            /* Повертаємо картам на ПК їхній повноцінний великий розмір */
+            .poker-table .w-10.h-14 {
+                width: 3.5rem !important; /* w-14 */
+                height: 5rem !important;  /* h-20 */
+                font-size: 0.875rem !important; /* text-xs */
+            }
+        }
     </style>
 </head>
 <body class="bg-gray-900 text-white font-sans min-h-screen flex flex-col justify-between">
@@ -23,27 +85,27 @@
     </header>
 
     <main class="flex-grow flex items-center justify-center p-2 sm:p-4">
-        <div class="poker-table w-full max-w-4xl rounded-[40px] md:rounded-[150px] relative p-4 md:p-0 grid grid-cols-2 md:flex md:flex-col items-center justify-center gap-4 md:gap-0 min-h-[460px] md:h-[450px]">
+        <div class="poker-table w-full max-w-4xl rounded-[40px] md:rounded-[150px] p-4 md:p-0 grid grid-cols-2 md:block relative gap-4 md:gap-0 min-h-[460px] md:h-[420px]">
             
-            <div class="order-2 md:absolute md:left-6 md:top-1/2 md:-translate-y-1/2 text-center bg-black/40 p-2 md:p-3 rounded-lg border border-red-500/30 w-full max-w-[135px] md:max-w-none justify-self-center">
+            <div class="static md:absolute md:left-6 md:top-1/2 md:-translate-y-1/2 text-center bg-black/40 p-2 md:p-3 rounded-lg border border-red-500/30 w-full max-w-[135px] md:w-36 justify-self-center z-10">
                 <div class="font-bold text-sm md:text-base text-red-400">🤖 Бот 1 (Агресор)</div>
                 <div id="bot1-status" class="text-xs text-gray-400 italic">Чекає...</div>
                 <div class="text-sm text-yellow-500">Chips: 1000$</div>
             </div>
 
-            <div class="order-1 col-span-2 md:absolute md:top-4 md:left-1/2 md:-translate-x-1/2 text-center bg-black/40 p-2 md:p-3 rounded-lg border border-blue-500/30 w-full max-w-[135px] md:max-w-none justify-self-center">
+            <div class="col-span-2 static md:absolute md:top-4 md:left-1/2 md:-translate-x-1/2 text-center bg-black/40 p-2 md:p-3 rounded-lg border border-blue-500/30 w-full max-w-[135px] md:w-36 justify-self-center z-10">
                 <div class="font-bold text-sm md:text-base text-blue-400">🤖 Бот 2 (Профі)</div>
                 <div id="bot2-status" class="text-xs text-gray-400 italic">Чекає...</div>
                 <div class="text-sm text-yellow-500">Chips: 1000$</div>
             </div>
 
-            <div class="order-3 md:absolute md:right-6 md:top-1/2 md:-translate-y-1/2 text-center bg-black/40 p-2 md:p-3 rounded-lg border border-purple-500/30 w-full max-w-[135px] md:max-w-none justify-self-center">
+            <div class="static md:absolute md:right-6 md:top-1/2 md:-translate-y-1/2 text-center bg-black/40 p-2 md:p-3 rounded-lg border border-purple-500/30 w-full max-w-[135px] md:w-36 justify-self-center z-10">
                 <div class="font-bold text-sm md:text-base text-purple-400">🤖 Бот 3 (Рандом)</div>
                 <div id="bot3-status" class="text-xs text-gray-400 italic">Чекає...</div>
                 <div class="text-sm text-yellow-500">Chips: 1000$</div>
             </div>
 
-            <div class="order-4 col-span-2 md:absolute flex gap-1 sm:gap-2 bg-black/30 p-2 sm:p-4 rounded-xl border border-white/5 justify-self-center mt-4 md:mt-0">
+            <div class="col-span-2 static md:absolute md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 flex gap-1 sm:gap-2 bg-black/30 p-2 sm:p-4 rounded-xl border border-white/5 justify-self-center mt-4 md:mt-0 z-0">
                 <div class="w-10 h-14 sm:w-14 sm:h-20 bg-white/10 rounded-md border border-dashed border-white/30 flex items-center justify-center text-gray-500 text-[10px] sm:text-xs">Flop 1</div>
                 <div class="w-10 h-14 sm:w-14 sm:h-20 bg-white/10 rounded-md border border-dashed border-white/30 flex items-center justify-center text-gray-500 text-[10px] sm:text-xs">Flop 2</div>
                 <div class="w-10 h-14 sm:w-14 sm:h-20 bg-white/10 rounded-md border border-dashed border-white/30 flex items-center justify-center text-gray-500 text-[10px] sm:text-xs">Flop 3</div>
