@@ -12,69 +12,80 @@
             box-shadow: inset 0 0 40px rgba(0,0,0,0.6);
         }
 
-        /* --- АДАПТАЦІЯ ДЛЯ СМАРТФОНІВ (ІДЕАЛЬНИЙ ТРИКУТНИК) --- */
+        /* --- ІДЕАЛЬНА МОБІЛЬНА ПІРАМІДА --- */
         @media (max-width: 768px) {
-            /* Перетворюємо стіл на сітку з 2-х колонок на мобілці */
             .poker-table {
                 width: 95% !important;
                 height: auto !important;
-                min-height: 450px !important;
+                min-height: 460px !important;
                 margin: 10px auto !important;
                 border: 10px solid #3d2314 !important;
                 border-radius: 40px !important;
-                padding: 20px 12px !important;
+                padding: 16px 10px !important;
                 
+                /* Робимо 3 чітких ряди: 1-й для Бот 2, 2-й для Бот 1 та 3, 3-й для карт */
                 display: grid !important;
                 grid-template-columns: repeat(2, 1fr) !important;
-                gap: 15px !important;
+                grid-template-rows: auto auto 1fr !important;
+                row-gap: 20px !important;
+                column-gap: 10px !important;
             }
 
-            /* Скидаємо старі абсолютні координати для всіх ботів */
+            /* Скидаємо всі старі абсолютні зсуви для ботів */
             .poker-table > div:nth-child(1),
             .poker-table > div:nth-child(2),
             .poker-table > div:nth-child(3) {
                 position: static !important;
                 transform: none !important;
                 width: 100% !important;
-                max-width: 130px !important;
-                padding: 8px !important;
-                font-size: 12px !important;
+                max-width: 125px !important;
+                padding: 6px !important;
+                font-size: 11px !important;
             }
 
-            /* 1. БОТ 2 (Профі) — стає зверху по центру на обидві колонки */
+            /* РЯД 1: Бот 2 (Профі) — на самому верху по центру (займає 2 колонки) */
             .poker-table > div:nth-child(2) {
+                grid-row: 1 !important;
                 grid-column: span 2 !important;
                 justify-self: center !important;
-                margin-bottom: 5px !important;
             }
 
-            /* 2. БОТ 1 (Агресор) — ліворуч під Бот 2 */
+            /* РЯД 2: Бот 1 (Агресор) — ліворуч під Бот 2 */
             .poker-table > div:nth-child(1) {
+                grid-row: 2 !important;
                 grid-column: 1 !important;
-                justify-self: center !important;
+                justify-self: end !important; /* притискаємо трохи до центру */
+                margin-right: 5px !important;
             }
 
-            /* 3. БОТ 3 (Рандом) — праворуч під Бот 2 */
+            /* РЯД 2: Бот 3 (Рандом) — праворуч навпроти Бот 1 */
             .poker-table > div:nth-child(3) {
+                grid-row: 2 !important;
                 grid-column: 2 !important;
-                justify-self: center !important;
+                justify-self: start !important; /* притискаємо трохи до центру */
+                margin-left: 5px !important;
             }
 
-            /* 4. КАРТИ СТОЛУ — падають в самий низ під трикутник ботів */
+            /* РЯД 3: КАРТИ СТОЛУ — чітко внизу, по центру, під усіма ботами */
             .poker-table .flex {
+                grid-row: 3 !important;
                 grid-column: span 2 !important;
                 justify-self: center !important;
-                margin-top: 30px !important;
+                align-self: end !important;
+                margin-top: 15px !important;
                 background: rgba(0, 0, 0, 0.4) !important;
-                padding: 8px !important;
+                padding: 6px !important;
                 gap: 4px !important;
             }
 
-            /* Трохи зменшуємо карти, щоб помістилися на будь-якому екрані */
+            /* Оптимальний розмір карт, щоб не вилазили за рамки */
             .poker-table .w-14.h-20 {
-                width: 42px !important;
-                height: 60px !important;
+                width: 40px !important;
+                height: 58px !important;
                 font-size: 14px !important;
+            }
+            .poker-table .text-2xl {
+                font-size: 1.1rem !important;
             }
         }
     </style>
