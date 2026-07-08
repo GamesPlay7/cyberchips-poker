@@ -401,7 +401,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 // --- Крок 4: Логіка ходу ботів ---
 function startBotTurns() {
-    // Хід Бота 1 (Агресор)
+    // 1. Хід Бота 1 (Агресор)
     if (activePlayers.bot1) {
         document.getElementById('bot1-status').innerText = "Ставить...";
         
@@ -420,6 +420,30 @@ function startBotTurns() {
         }, 1000);
     }
 
+    // 2. Хід Бота 2 (Профі)
+    setTimeout(() => {
+        if (activePlayers.bot2) {
+            document.getElementById('bot2-status').innerText = "Думає...";
+            
+            setTimeout(() => {
+                botStacks.bot2 -= currentBet;
+                currentPot += currentBet;
+                
+                document.getElementById('bot2-status').innerText = "Call";
+                if (typeof triggerBotSpeech === "function") {
+                    triggerBotSpeech('bot2', 'Я в грі, підтримумую.', 3000);
+                }
+                updateGameLog("🤖 <b>Бот 2 (Профі)</b> сказав Call.");
+                updateTableUI();
+
+                // 📍 ОСЬ СЮДИ МИ ЙОГО ДУБЛЮЄМО: через 2.5 секунди після ходу Профі відкривається Флоп!
+                setTimeout(dealFlop, 2500);
+
+            }, 1000);
+        }
+    }, 2500); 
+}
+
     // Хід Бота 2 (Профі)
     setTimeout(() => {
         if (activePlayers.bot2) {
@@ -437,4 +461,36 @@ function startBotTurns() {
             }, 1000);
         }
     }, 2500); 
+}
+
+// Функція викладення Флопу (перші 3 спільні карти)
+function dealFlop() {
+    updateGameLog("⏳ Дилер відкриває <b>Флоп</b> (перші 3 карти на столі)...");
+
+    // Беремо 3 карти з колоди
+    const flop1 = deck.pop();
+    const flop2 = deck.pop();
+    const flop3 = deck.pop();
+
+    // Знаходимо блок спільноти, який ми назвали id="community-cards"
+    const communityCardElements = document.getElementById('community-cards').children;
+
+    if (communityCardElements.length >= 3) {
+        // Замінюємо сірий текст "Flop 1" на реальну карту
+        communityCardElements[0].innerHTML = `<span class="${getCardColor(flop1.suit)}">${flop1.value}${flop1.suit}</span>`;
+        communityCardElements[0].className = "w-10 h-14 sm:w-14 sm:h-20 bg-white text-black font-bold rounded-md flex items-center justify-center text-sm sm:text-lg shadow-md animate-card-appear";
+
+        // Для другої карти
+        communityCardElements[1].innerHTML = `<span class="${getCardColor(flop2.suit)}">${flop2.value}${flop2.suit}</span>`;
+        communityCardElements[1].className = "w-10 h-14 sm:w-14 sm:h-20 bg-white text-black font-bold rounded-md flex items-center justify-center text-sm sm:text-lg shadow-md animate-card-appear";
+
+        // Для третьої карти
+        communityCardElements[2].innerHTML = `<span class="${getCardColor(flop3.suit)}">${flop3.value}${flop3.suit}</span>`;
+        communityCardElements[2].className = "w-10 h-14 sm:w-14 sm:h-20 bg-white text-black font-bold rounded-md flex items-center justify-center text-sm sm:text-lg shadow-md animate-card-appear";
+    }
+
+    // Скидаємо статус ботів на новий раунд ставок
+    document.getElementById('bot1-status').innerText = "Думає...";
+    document.getElementById('bot2-status').innerText = "Думає...";
+    currentBet = 0; // ставки обнуляються на новому колі
 }
