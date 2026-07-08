@@ -1,197 +1,132 @@
-let gameState = {
-    pot: 0,
-    currentBet: 0,
-    playerChips: 1000,
-    currentTurn: 0, // 0 = Гравець, 1 = Бот 1, 2 = Бот 2, 3 = Бот 3
-    round: 'preflop', // preflop, flop, turn, river, showdown
-    activePlayers: [true, true, true, true]
-};
+import random
+from collections import Counter
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
-const potDisplay = document.getElementById('total-pot');
-const btnFold = document.getElementById('btn-fold');
-const btnCheck = document.getElementById('btn-check');
-const btnRaise = document.getElementById('btn-raise');
-const raiseAmountInput = document.getElementById('raise-amount');
+app = FastAPI()
 
-window.onload = () => {
-    console.log("♠️ Покерний клуб CyberChips готовий!");
-    setupEventListeners();
-    startNewHand();
-};
+# Дозволяємо фронтенду робити запити до нашого сервера
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
-function setupEventListeners() {
-    btnFold.addEventListener('click', () => handlePlayerAction('fold'));
-    btnCheck.addEventListener('click', () => handlePlayerAction('check'));
-    btnRaise.addEventListener('click', () => handlePlayerAction('raise'));
-}
-
-// --- ПОЧАТОК НОВОЇ РОЗДАЧІ ---
-async function startNewHand() {
-    gameState.pot = 0;
-    gameState.currentBet = 0;
-    gameState.currentTurn = 0;
-    gameState.round = 'preflop';
-    gameState.activePlayers = [true, true, true, true];
-    
-    document.getElementById('bot1-status').innerText = "Чекає...";
-    document.getElementById('bot2-status').innerText = "Чекає...";
-    document.getElementById('bot3-status').innerText = "Чекає...";
-
-    // Очищаємо стіл від старих карт дилера
-    clearCommunityCards();
-
-    try {
-        let response = await fetch('http://127.0.0.1:8000/start_game');
-        let data = await response.json();
-        
-        // Малюємо карти гравця
-        const cardsContainer = document.getElementById('player-cards');
-        cardsContainer.innerHTML = '';
-        data.player_cards.forEach(card => {
-            let color = (card.suit === '♦' || card.suit === '♥') ? 'text-red-600' : 'text-black';
-            cardsContainer.innerHTML += `
-                <div class="w-14 h-20 bg-white ${color} font-black rounded-md flex flex-col items-center justify-center text-xl shadow-md">
-                    <div>${card.value}</div>
-                    <div class="text-2xl -mt-2">${card.suit}</div>
-                </div>
-            `;
-        });
-    } catch (error) {
-        console.error("Помилка сервера:", error);
-    }
-
-    updateUI();
-    setControlsEnabled(true);
-}
-
-// --- ХІД ГРАВЦЯ ---
-function handlePlayerAction(action) {
-    if (gameState.currentTurn !== 0) return;
-
-    if (action === 'fold') {
-        gameState.activePlayers[0] = false;
-        console.log("🔴 Ти скинув карти.");
-    } else if (action === 'check') {
-        console.log("⚪ Ти сказав Check/Call.");
-    } else if (action === 'raise') {
-        let amount = parseInt(raiseAmountInput.value);
-        gameState.pot += amount;
-        gameState.playerChips -= amount;
-        gameState.currentBet = amount;
-    }
-
-    updateUI();
-    setControlsEnabled(false);
-    nextTurn();
-}
-
-// --- СИСТЕМА ЧЕРГИ ТА ПЕРЕХОДУ РАУНДІВ ---
-function nextTurn() {
-    gameState.currentTurn = (gameState.currentTurn + 1) % 4;
-
-    // Якщо коло торгівлі завершилося (хід повернувся до гравця)
-    if (gameState.currentTurn === 0) {
-        advanceGameRound();
-        return;
-    }
-
-    let botIndex = gameState.currentTurn;
-    if (gameState.activePlayers[botIndex]) {
-        let botStatusElement = document.getElementById(`bot${botIndex}-status`);
-        botStatusElement.innerText = "Думає...";
-        botStatusElement.classList.add('text-yellow-400', 'animate-pulse');
-
-        setTimeout(() => {
-            botStatusElement.innerText = "Зробив хід ✅";
-            botStatusElement.classList.remove('text-yellow-400', 'animate-pulse');
-            
-            // Проста імітація ставки бота
-            gameState.pot += 25;
-            updateUI();
-            nextTurn();
-        }, 1500); 
-    } else {
-        nextTurn();
-    }
-}
-
-// --- ПЕРЕХІД МІЖ РАУНДАМИ (ФЛОП, ТЕРН, РІВЕР) ---
-async function advanceGameRound() {
-    try {
-        let response = await fetch('http://127.0.0.1:8000/next_round');
-        let data = await response.json();
-        gameState.round = data.round;
-
-        if (gameState.round === 'showdown') {
-            // Раунд розкриття карт — визначаємо переможця
-            let winResponse = await fetch('http://127.0.0.1:8000/determine_winner');
-            let winData = await winResponse.json();
-            alert(winData.winner_text); // Виводимо переможця через сповіщення
-            startNewHand(); // Починаємо нове коло
-        } else {
-            // Виводимо карти на стіл
-            renderCommunityCards(data.community_cards);
-            console.log(`--- Новий раунд: ${gameState.round.toUpperCase()} ---`);
-            
-            // Якщо гравець ще в грі, повертаємо йому хід
-            if (gameState.activePlayers[0]) {
-                setControlsEnabled(true);
-            } else {
-                nextTurn(); // Якщо гравець здався, боти грають далі самі
-            }
+class Card:
+    def __init__(self, suit, value):
+        self.suit = suit
+        self.value = value
+        values_map = {
+            '2': 2, '3': 3, '4': 4, '5': 5, '6': 6, '7': 7, '8': 8, '9': 9, '10': 10,
+            'J': 11, 'Q': 12, 'K': 13, 'A': 14
         }
-    } catch (error) {
-        console.error("Помилка зміни раунду:", error);
+        self.rank = values_map[value]
+        
+    def to_dict(self):
+        return {"suit": self.suit, "value": self.value}
+
+def evaluate_hand(hand):
+    if len(hand) < 5:
+        return (0, "Старша карта")
+        
+    ranks = sorted([card.rank for card in hand], reverse=True)
+    suits = [card.suit for card in hand]
+    
+    suit_counts = Counter(suits)
+    is_flush = any(count >= 5 for count in suit_counts.values())
+    
+    rank_counts = Counter(ranks)
+    counts = sorted(rank_counts.values(), reverse=True)
+    
+    if is_flush: 
+        return (5, "Флеш")
+    if counts in [[4, 1], [4, 2], [4, 3]]: 
+        return (7, "Каре")
+    if counts in [[3, 2], [3, 3], [3, 2, 1]]: 
+        return (6, "Фул-Хаус")
+    if counts in [[3, 1, 1], [3, 1, 1, 1]]: 
+        return (3, "Трійка")
+    if counts in [[2, 2, 1], [2, 2, 2], [2, 2, 1, 1]]: 
+        return (2, "Дві пари")
+    if counts in [[2, 1, 1, 1], [2, 1, 1, 1, 1], [2, 1, 1, 1, 1, 1]]: 
+        return (1, "Пара")
+    
+    return (0, "Старша карта")
+
+class GameRoom:
+    def __init__(self):
+        self.deck = []
+        self.player_hand = []
+        self.bots_hands = {}
+        self.community_cards = []
+        self.round_state = "preflop"
+
+game = GameRoom()
+
+@app.get("/start_game")
+def start_game():
+    suits = ['♣', '♦', '♥', '♠']
+    values = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A']
+    game.deck = [Card(suit, value) for suit in suits for value in values]
+    random.shuffle(game.deck)
+    
+    game.player_hand = [game.deck.pop(), game.deck.pop()]
+    game.bots_hands = {
+        "bot1": [game.deck.pop(), game.deck.pop()],
+        "bot2": [game.deck.pop(), game.deck.pop()],
+        "bot3": [game.deck.pop(), game.deck.pop()]
     }
-}
-
-// --- МАЛЮВАННЯ КАРТ НА СТОЛІ ---
-function renderCommunityCards(cards) {
-    // Знайдемо центральний блок столу з картами дилера
-    const tableCenter = document.querySelector('.poker-table .flex');
-    tableCenter.innerHTML = ''; // Очищаємо заповнювачі (Flop, Turn...)
-
-    cards.forEach(card => {
-        let color = (card.suit === '♦' || card.suit === '♥') ? 'text-red-600' : 'text-black';
-        tableCenter.innerHTML += `
-            <div class="w-14 h-20 bg-white ${color} font-black rounded-md flex flex-col items-center justify-center text-xl shadow-md animate-bounce">
-                <div>${card.value}</div>
-                <div class="text-2xl -mt-2">${card.suit}</div>
-            </div>
-        `;
-    });
-
-    // Додаємо порожні місця для карт, які ще не відкриті
-    for (let i = cards.length; i < 5; i++) {
-        let label = i < 3 ? `Flop ${i+1}` : (i === 3 ? 'Turn' : 'River');
-        tableCenter.innerHTML += `
-            <div class="w-14 h-20 bg-white/10 rounded-md border border-dashed border-white/30 flex items-center justify-center text-gray-500 text-xs">${label}</div>
-        `;
+    game.community_cards = []
+    game.round_state = "preflop"
+    
+    return {
+        "player_cards": [c.to_dict() for c in game.player_hand],
+        "round": game.round_state
     }
-}
 
-function clearCommunityCards() {
-    const tableCenter = document.querySelector('.poker-table .flex');
-    tableCenter.innerHTML = `
-        <div class="w-14 h-20 bg-white/10 rounded-md border border-dashed border-white/30 flex items-center justify-center text-gray-500 text-xs">Flop 1</div>
-        <div class="w-14 h-20 bg-white/10 rounded-md border border-dashed border-white/30 flex items-center justify-center text-gray-500 text-xs">Flop 2</div>
-        <div class="w-14 h-20 bg-white/10 rounded-md border border-dashed border-white/30 flex items-center justify-center text-gray-500 text-xs">Flop 3</div>
-        <div class="w-14 h-20 bg-white/10 rounded-md border border-dashed border-white/30 flex items-center justify-center text-gray-500 text-xs">Turn</div>
-        <div class="w-14 h-20 bg-white/10 rounded-md border border-dashed border-white/30 flex items-center justify-center text-gray-500 text-xs">River</div>
-    `;
-}
+@app.get("/next_round")
+def next_round():
+    if game.round_state == "preflop":
+        game.round_state = "flop"
+        game.deck.pop()  # Спалюємо
+        game.community_cards = [game.deck.pop(), game.deck.pop(), game.deck.pop()]
+    elif game.round_state == "flop":
+        game.round_state = "turn"
+        game.deck.pop()  # Спалюємо
+        game.community_cards.append(game.deck.pop())
+    elif game.round_state == "turn":
+        game.round_state = "river"
+        game.deck.pop()  # Спалюємо
+        game.community_cards.append(game.deck.pop())
+    elif game.round_state == "river":
+        game.round_state = "showdown"
+        
+    return {
+        "round": game.round_state,
+        "community_cards": [c.to_dict() for c in game.community_cards]
+    }
 
-function updateUI() {
-    potDisplay.innerText = `${gameState.pot}$`;
-    document.querySelector('.text-xl.font-black.text-yellow-400').innerText = `${gameState.playerChips}$`;
-}
-
-function setControlsEnabled(enabled) {
-    btnFold.disabled = !enabled;
-    btnCheck.disabled = !enabled;
-    btnRaise.disabled = !enabled;
-    const opacityAction = enabled ? 'remove' : 'add';
-    btnFold.classList[opacityAction]('opacity-50', 'cursor-not-allowed');
-    btnCheck.classList[opacityAction]('opacity-50', 'cursor-not-allowed');
-    btnRaise.classList[opacityAction]('opacity-50', 'cursor-not-allowed');
-}
+@app.get("/determine_winner")
+def determine_winner():
+    results = {}
+    
+    p_score, p_name = evaluate_hand(game.player_hand + game.community_cards)
+    results["player"] = {"score": p_score, "name": p_name}
+    
+    for bot_id, hand in game.bots_hands.items():
+        b_score, b_name = evaluate_hand(hand + game.community_cards)
+        results[bot_id] = {"score": b_score, "name": b_name}
+        
+    winner = max(results, key=lambda k: results[k]["score"])
+    
+    # Гарне ім'я для виведення на екран
+    names_map = {"player": "Ти", "bot1": "Бот 1 (Агресор)", "bot2": "Бот 2 (Профі)", "bot3": "Бот 3 (Рандом)"}
+    winner_name = names_map.get(winner, winner)
+    
+    return {
+        "results": results,
+        "winner": winner,
+        "winner_text": f"🎉 Переміг {winner_name} з комбінацією \"{results[winner]['name']}\"!"
+    }
