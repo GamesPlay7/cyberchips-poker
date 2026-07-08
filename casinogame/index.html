@@ -166,8 +166,13 @@ function startGame() {
             const menu = document.getElementById('welcome-menu');
             menu.classList.add('opacity-0', 'pointer-events-none');
 
-            // ОНОВЛЕНО: Замість однієї тестової фрази викликаємо Крок 2 для всіх ботів!
+            // Викликаємо привітання ботів
             initBotGreetings(); 
+
+            // СЮДИ ДОПИСУЄМО: Через 3 секунди автоматично стартує роздача карт!
+            setTimeout(() => {
+                startNewRound();
+            }, 3000);
         }
 
         // Функція для відображення реплік ботів (фішка чату)

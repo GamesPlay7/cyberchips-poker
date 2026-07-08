@@ -1,4 +1,27 @@
 // База реплік для чату ботів
+// Змінні стану гри
+let deck = [];
+const suits = ['♠', '♥', '♦', '♣'];
+const values = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
+
+// 1. Функція створення нової колоди (52 карти)
+function createDeck() {
+    deck = [];
+    for (let suit of suits) {
+        for (let value of values) {
+            deck.push({ value, suit });
+        }
+    }
+}
+
+// 2. Функція тасування колоди (Рандом за методом Фішера-Єйтса)
+function shuffleDeck() {
+    for (let i = deck.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [deck[i], deck[j]] = [deck[j], deck[i]];
+    }
+}
+
 const botPhrases = {
     start: [
         "Ну що, погнали? Удачі всім!",
@@ -244,4 +267,35 @@ function initBotGreetings() {
             }
         }, Math.random() * 600 + 200);
     });
+}
+
+// 3. Запуск нового раунду роздачі
+function startNewRound() {
+    createDeck();
+    shuffleDeck();
+
+    updateGameLog("🃏 Дилер роздає карти...");
+
+    // Видаємо дві карти гравцю
+    const playerCard1 = deck.pop();
+    const playerCard2 = deck.pop();
+
+    // Відображаємо карти гравця на екрані (у футері)
+    const playerCardElements = document.getElementById('player-cards').children;
+    if (playerCardElements.length >= 2) {
+        playerCardElements[0].innerHTML = `<span class="${getCardColor(playerCard1.suit)}">${playerCard1.value}${playerCard1.suit}</span>`;
+        playerCardElements[1].innerHTML = `<span class="${getCardColor(playerCard2.suit)}">${playerCard2.value}${playerCard2.suit}</span>`;
+    }
+
+    // Змінюємо статус ботів на активний
+    document.getElementById('bot1-status').innerText = "Думає...";
+    document.getElementById('bot2-status').innerText = "Думає...";
+    document.getElementById('bot3-status').innerText = "Думає...";
+    
+    updateGameLog("💬 Боти оцінюють свої шанси. Твій хід!");
+}
+
+// Допоміжна функція для кольору масті (червоний для чирви/бубни)
+function getCardColor(suit) {
+    return (suit === '♥' || suit === '♦') ? 'text-red-500' : 'text-black';
 }
