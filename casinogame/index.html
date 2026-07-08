@@ -149,32 +149,25 @@
             });
         }
 
-        function startGame() {
-            // Беремо текст, зрізаємо зайві пробіли
+function startGame() {
             let nameInput = document.getElementById('player-name-input').value.trim();
-            
-            // Якщо поле порожнє — примусово ставимо "Гравець"
             if (nameInput === "") {
                 nameInput = "Гравець";
             }
-            
             botDifficulty = document.getElementById('bot-difficulty').value;
             
-            // Оновлюємо дані у футері гри
             document.getElementById('player-display-name').innerText = "😎 " + nameInput;
             document.getElementById('player-display-chips').innerText = userChips + "$";
             
-            // Запис у лог гри
             const logBox = document.getElementById('game-log');
             logBox.innerHTML += `<div>• Гру розпочато. Гравець: <b>${nameInput}</b>, Стек: <b>${userChips}$</b>, Складність ШІ: <b>${botDifficulty}</b>.</div>`;
             logBox.scrollTop = logBox.scrollHeight;
 
-            // Плавно ховаємо стартове меню
             const menu = document.getElementById('welcome-menu');
             menu.classList.add('opacity-0', 'pointer-events-none');
 
-            // Тестовий виклик реплік ботів
-            triggerBotSpeech('bot2', 'Ну що, пограємо? Усім удачі!', 3000);
+            // ОНОВЛЕНО: Замість однієї тестової фрази викликаємо Крок 2 для всіх ботів!
+            initBotGreetings(); 
         }
 
         // Функція для відображення реплік ботів (фішка чату)

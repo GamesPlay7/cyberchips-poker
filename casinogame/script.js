@@ -1,3 +1,31 @@
+// База реплік для чату ботів
+const botPhrases = {
+    start: [
+        "Ну що, погнали? Удачі всім!",
+        "Сьогодні мій день, хлопці.",
+        "Давайте без образ, це просто бізнес 😎",
+        "Хтось сьогодні піде з пустими кишенями!"
+    ],
+    fold: [
+        "Пас. Карти повне сміття...",
+        "Ну його, я пасую.",
+        "Не цього разу. Fold.",
+        "Ех, гарна спроба, але я пас."
+    ],
+    raise: [
+        "Піднімаю ставки! Хто сміливий?",
+        "🔥 Ставлю більше. Що скажете?",
+        "У мене занадто хороша рука, щоб чекати.",
+        "Давай перевіримо твої нерви! Raise!"
+    ],
+    win: [
+        "Я ж казав, що переможу! 🎰",
+        "Забираю банк, дякую за гру!",
+        "Чистий розрахунок і ніякої магії.",
+        "Легкі гроші!"
+    ]
+};
+
 let gameState = {
     pot: 0,
     currentBet: 0,
@@ -192,4 +220,28 @@ function setControlsEnabled(enabled) {
     btnFold.classList[opacityAction]('opacity-50', 'cursor-not-allowed');
     btnCheck.classList[opacityAction]('opacity-50', 'cursor-not-allowed');
     btnRaise.classList[opacityAction]('opacity-50', 'cursor-not-allowed');
+}
+
+// Функція для додавання повідомлень в ігровий лог
+function updateGameLog(message) {
+    const logBox = document.getElementById('game-log');
+    if (logBox) {
+        logBox.innerHTML += `<div>• ${message}</div>`;
+        logBox.scrollTop = logBox.scrollHeight;
+    }
+}
+
+// Функція, щоб боти привіталися на початку гри
+function initBotGreetings() {
+    const bots = ['bot1', 'bot2', 'bot3'];
+    bots.forEach(botId => {
+        const randomIndex = Math.floor(Math.random() * botPhrases.start.length);
+        const speechText = botPhrases.start[randomIndex];
+        
+        setTimeout(() => {
+            if (typeof triggerBotSpeech === "function") {
+                triggerBotSpeech(botId, speechText, 4000);
+            }
+        }, Math.random() * 600 + 200);
+    });
 }
