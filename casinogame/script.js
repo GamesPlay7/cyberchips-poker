@@ -1,48 +1,72 @@
-// --- СТАН ГРИ (Зберігається в браузері) ---
 let gameState = {
     pot: 0,
     currentBet: 0,
     playerChips: 1000,
     currentTurn: 0, // 0 = Гравець, 1 = Бот 1, 2 = Бот 2, 3 = Бот 3
-    round: 'preflop', // preflop, flop, turn, river
-    activePlayers: [true, true, true, true] // Хто ще в грі (не скинув карти)
+    round: 'preflop', // preflop, flop, turn, river, showdown
+    activePlayers: [true, true, true, true]
 };
 
-// --- ЕЛЕМЕНТИ ІНТЕРФЕЙСУ ---
+const BASE_URL = 'https://cyberchips-poker.onrender.com';
+
 const potDisplay = document.getElementById('total-pot');
 const btnFold = document.getElementById('btn-fold');
 const btnCheck = document.getElementById('btn-check');
 const btnRaise = document.getElementById('btn-raise');
 const raiseAmountInput = document.getElementById('raise-amount');
 
-// --- ІНІЦІАЛІЗАЦІЯ ГРИ ---
 window.onload = () => {
     console.log("♠️ Покерний клуб CyberChips готовий!");
     setupEventListeners();
     startNewHand();
 };
 
-// --- СЛУХАЧІ КЛІКІВ МИШКИ ---
 function setupEventListeners() {
     btnFold.addEventListener('click', () => handlePlayerAction('fold'));
     btnCheck.addEventListener('click', () => handlePlayerAction('check'));
     btnRaise.addEventListener('click', () => handlePlayerAction('raise'));
 }
 
-function startNewHand() {
+// --- ПОЧАТОК НОВОЇ РОЗДАЧІ ---
+async function startNewHand() {
     gameState.pot = 0;
     gameState.currentBet = 0;
-    gameState.currentTurn = 0; // Починає завжди гравець
+    gameState.currentTurn = 0;
+    gameState.round = 'preflop';
     gameState.activePlayers = [true, true, true, true];
-    updateUI();
     
-    // Оскільки зараз хід гравця, кнопки активні
+    document.getElementById('bot1-status').innerText = "Чекає...";
+    document.getElementById('bot2-status').innerText = "Чекає...";
+    document.getElementById('bot3-status').innerText = "Чекає...";
+
+    clearCommunityCards();
+
+    try {
+        let response = await fetch(`${BASE_URL}/start_game`);
+        let data = await response.json();
+        
+        const cardsContainer = document.getElementById('player-cards');
+        cardsContainer.innerHTML = '';
+        data.player_cards.forEach(card => {
+            let color = (card.suit === '♦' || card.suit === '♥') ? 'text-red-600' : 'text-black';
+            cardsContainer.innerHTML += `
+                <div class="w-14 h-20 bg-white ${color} font-black rounded-md flex flex-col items-center justify-center text-xl shadow-md">
+                    <div>${card.value}</div>
+                    <div class="text-2xl -mt-2">${card.suit}</div>
+                </div>
+            `;
+        });
+    } catch (error) {
+        console.error("Помилка сервера:", error);
+    }
+
+    updateUI();
     setControlsEnabled(true);
 }
 
-// --- ОБРОБКА ХОДУ ГРАВЦЯ (МИШКА) ---
+// --- ХІД ГРАВЦЯ ---
 function handlePlayerAction(action) {
-    if (gameState.currentTurn !== 0) return; // Не твій хід — ігнор
+    if (gameState.currentTurn !== 0) return;
 
     if (action === 'fold') {
         gameState.activePlayers[0] = false;
@@ -54,121 +78,118 @@ function handlePlayerAction(action) {
         gameState.pot += amount;
         gameState.playerChips -= amount;
         gameState.currentBet = amount;
-        console.log(`🔥 Ти підняв ставку на ${amount}$`);
     }
 
     updateUI();
-    setControlsEnabled(false); // Вимикаємо кнопки гравця
+    setControlsEnabled(false);
     nextTurn();
 }
 
-// --- СИСТЕМА ЧЕРГИ ТА "ДУМАННЯ" БОТІВ ---
+// --- СИСТЕМА ЧЕРГИ ТА ПЕРЕХОДУ РАУНДІВ ---
 function nextTurn() {
-    // Переходимо до наступного гравця за столом
     gameState.currentTurn = (gameState.currentTurn + 1) % 4;
 
-    // Якщо коло замкнулося і знову хід гравця
     if (gameState.currentTurn === 0) {
-        if (gameState.activePlayers[0]) {
-            setControlsEnabled(true); // Вмикаємо керування мишкою гравцю
-            return;
-        } else {
-            // Якщо гравець скинув, боти грають між собою далі
-            nextTurn();
-            return;
-        }
+        advanceGameRound();
+        return;
     }
 
-    // ЛОГІКА ХОДУ БОТІВ (Імітація мислення)
     let botIndex = gameState.currentTurn;
     if (gameState.activePlayers[botIndex]) {
         let botStatusElement = document.getElementById(`bot${botIndex}-status`);
-        
-        // 1. Порождаємо затримку: статус міняється на "Думає..."
         botStatusElement.innerText = "Думає...";
         botStatusElement.classList.add('text-yellow-400', 'animate-pulse');
 
-        // 2. Через 2 секунди (2000 мілісекунд) бот робить хід
         setTimeout(() => {
             botStatusElement.innerText = "Зробив хід ✅";
             botStatusElement.classList.remove('text-yellow-400', 'animate-pulse');
             
-            // Спрощена логіка: бот або колить, або фолдить з шансом 15%
             if (Math.random() < 0.15) {
                 gameState.activePlayers[botIndex] = false;
                 botStatusElement.innerText = "Fold 🔴";
             } else {
-                gameState.pot += 50; // Імітація ставки бота
+                gameState.pot += 25;
             }
-
             updateUI();
-            nextTurn(); // Передаємо хід далі
-        }, 2000); 
+            nextTurn();
+        }, 1500); 
     } else {
-        // Якщо цей бот уже скинув карти, одразу переходимо до наступного
         nextTurn();
     }
 }
 
-// --- ОНОВЛЕННЯ ЕКРАНУ ---
+// --- ПЕРЕХІД МІЖ РАУНДАМИ (ФЛОП, ТЕРН, РІВЕР) ---
+async function advanceGameRound() {
+    try {
+        let response = await fetch(`${BASE_URL}/next_round`);
+        let data = await response.json();
+        gameState.round = data.round;
+
+        if (gameState.round === 'showdown') {
+            let winResponse = await fetch(`${BASE_URL}/determine_winner`);
+            let winData = await winResponse.json();
+            alert(winData.winner_text);
+            startNewHand();
+        } else {
+            renderCommunityCards(data.community_cards);
+            console.log(`--- Новий раунд: ${gameState.round.toUpperCase()} ---`);
+            
+            if (gameState.activePlayers[0]) {
+                setControlsEnabled(true);
+            } else {
+                nextTurn();
+            }
+        }
+    } catch (error) {
+        console.error("Помилка зміни раунду:", error);
+    }
+}
+
+// --- МАЛЮВАННЯ КАРТ НА СТОЛІ ---
+function renderCommunityCards(cards) {
+    const tableCenter = document.querySelector('.poker-table .flex');
+    tableCenter.innerHTML = '';
+
+    cards.forEach(card => {
+        let color = (card.suit === '♦' || card.suit === '♥') ? 'text-red-600' : 'text-black';
+        tableCenter.innerHTML += `
+            <div class="w-14 h-20 bg-white ${color} font-black rounded-md flex flex-col items-center justify-center text-xl shadow-md animate-bounce">
+                <div>${card.value}</div>
+                <div class="text-2xl -mt-2">${card.suit}</div>
+            </div>
+        `;
+    });
+
+    for (let i = cards.length; i < 5; i++) {
+        let label = i < 3 ? `Flop ${i+1}` : (i === 3 ? 'Turn' : 'River');
+        tableCenter.innerHTML += `
+            <div class="w-14 h-20 bg-white/10 rounded-md border border-dashed border-white/30 flex items-center justify-center text-gray-500 text-xs">${label}</div>
+        `;
+    }
+}
+
+function clearCommunityCards() {
+    const tableCenter = document.querySelector('.poker-table .flex');
+    tableCenter.innerHTML = `
+        <div class="w-14 h-20 bg-white/10 rounded-md border border-dashed border-white/30 flex items-center justify-center text-gray-500 text-xs">Flop 1</div>
+        <div class="w-14 h-20 bg-white/10 rounded-md border border-dashed border-white/30 flex items-center justify-center text-gray-500 text-xs">Flop 2</div>
+        <div class="w-14 h-20 bg-white/10 rounded-md border border-dashed border-white/30 flex items-center justify-center text-gray-500 text-xs">Flop 3</div>
+        <div class="w-14 h-20 bg-white/10 rounded-md border border-dashed border-white/30 flex items-center justify-center text-gray-500 text-xs">Turn</div>
+        <div class="w-14 h-20 bg-white/10 rounded-md border border-dashed border-white/30 flex items-center justify-center text-gray-500 text-xs">River</div>
+    `;
+}
+
 function updateUI() {
     potDisplay.innerText = `${gameState.pot}$`;
     document.querySelector('.text-xl.font-black.text-yellow-400').innerText = `${gameState.playerChips}$`;
 }
 
-// --- БЛОКУВАННЯ КНОПОК ---
 function setControlsEnabled(enabled) {
-    if (enabled) {
-        btnFold.disabled = false;
-        btnCheck.disabled = false;
-        btnRaise.disabled = false;
-        btnFold.classList.remove('opacity-50', 'cursor-not-allowed');
-        btnCheck.classList.remove('opacity-50', 'cursor-not-allowed');
-        btnRaise.classList.remove('opacity-50', 'cursor-not-allowed');
-    } else {
-        btnFold.disabled = true;
-        btnCheck.disabled = true;
-        btnRaise.disabled = true;
-        btnFold.classList.add('opacity-50', 'cursor-not-allowed');
-        btnCheck.classList.add('opacity-50', 'cursor-not-allowed');
-        btnRaise.classList.add('opacity-50', 'cursor-not-allowed');
-    }
-}
-
-async function startNewHand() {
-    gameState.pot = 0;
-    gameState.currentBet = 0;
-    gameState.currentTurn = 0;
-    gameState.activePlayers = [true, true, true, true];
-    
-    // Очищуємо статуси ботів на екрані
-    document.getElementById('bot1-status').innerText = "Чекає...";
-    document.getElementById('bot2-status').innerText = "Чекає...";
-    document.getElementById('bot3-status').innerText = "Чекає...";
-
-    try {
-        // Запитуємо карти у нашого Python-сервера
-        let response = await fetch('http://127.0.0.1:8000/start_game');
-        let data = await response.json();
-        
-        // Виводимо отримані карти на екран гравцю
-        const cardsContainer = document.getElementById('player-cards');
-        cardsContainer.innerHTML = ''; // Очистити старі карти
-        
-        data.player_cards.forEach(card => {
-            let color = (card.suit === '♦' || card.suit === '♥') ? 'text-red-600' : 'text-black';
-            cardsContainer.innerHTML += `
-                <div class="w-14 h-20 bg-white ${color} font-black rounded-md flex flex-col items-center justify-center text-xl shadow-md">
-                    <div>${card.value}</div>
-                    <div class="text-2xl -mt-2">${card.suit}</div>
-                </div>
-            `;
-        });
-
-    } catch (error) {
-        console.error("Помилка зв'язку з Python сервером:", error);
-    }
-
-    updateUI();
-    setControlsEnabled(true);
+    btnFold.disabled = !enabled;
+    btnCheck.disabled = !enabled;
+    btnRaise.disabled = !enabled;
+    const opacityAction = enabled ? 'remove' : 'add';
+    btnFold.classList[opacityAction]('opacity-50', 'cursor-not-allowed');
+    btnCheck.classList[opacityAction]('opacity-50', 'cursor-not-allowed');
+    btnRaise.classList[opacityAction]('opacity-50', 'cursor-not-allowed');
 }
