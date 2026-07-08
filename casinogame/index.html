@@ -27,8 +27,8 @@
 
             <div class="mb-5 text-left">
                 <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Твій нікнейм</label>
-                <input type="text" id="player-name-input" value="Гравець" maxlength="12"
-                    class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-yellow-500 transition-colors text-center font-bold">
+                <input type="text" id="player-name-input" placeholder="Гравець" maxlength="12"
+                    class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-yellow-500 transition-colors text-center font-bold placeholder-slate-500">
             </div>
 
             <div class="mb-6 text-left">
@@ -150,24 +150,30 @@
         }
 
         function startGame() {
-            const nameInput = document.getElementById('player-name-input').value.trim();
-            const finalName = nameInput !== "" ? nameInput : "Гравець";
+            // Беремо текст, зрізаємо зайві пробіли
+            let nameInput = document.getElementById('player-name-input').value.trim();
+            
+            // Якщо поле порожнє — примусово ставимо "Гравець"
+            if (nameInput === "") {
+                nameInput = "Гравець";
+            }
+            
             botDifficulty = document.getElementById('bot-difficulty').value;
             
-            // Оновлюємо дані у футері
-            document.getElementById('player-display-name').innerText = "😎 " + finalName;
+            // Оновлюємо дані у футері гри
+            document.getElementById('player-display-name').innerText = "😎 " + nameInput;
             document.getElementById('player-display-chips').innerText = userChips + "$";
             
             // Запис у лог гри
             const logBox = document.getElementById('game-log');
-            logBox.innerHTML += `<div>• Гру розпочато. Гравець: <b>${finalName}</b>, Стек: <b>${userChips}$</b>, Складність ШІ: <b>${botDifficulty}</b>.</div>`;
+            logBox.innerHTML += `<div>• Гру розпочато. Гравець: <b>${nameInput}</b>, Стек: <b>${userChips}$</b>, Складність ШІ: <b>${botDifficulty}</b>.</div>`;
             logBox.scrollTop = logBox.scrollHeight;
 
             // Плавно ховаємо стартове меню
             const menu = document.getElementById('welcome-menu');
             menu.classList.add('opacity-0', 'pointer-events-none');
 
-            // Тестовий виклик реплік ботів (щоб перевірити, як працює фішка чату)
+            // Тестовий виклик реплік ботів
             triggerBotSpeech('bot2', 'Ну що, пограємо? Усім удачі!', 3000);
         }
 
