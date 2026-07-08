@@ -112,7 +112,7 @@ function nextTurn() {
             }
             updateUI();
             nextTurn();
-        }, 1500); 
+        }, 3500); 
     } else {
         nextTurn();
     }
