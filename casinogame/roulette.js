@@ -1,3 +1,4 @@
+const BASE_URL = "https://cyberchips-poker.onrender.com";
 // Порядок чисел на американському колесі (має збігатися з Python!)
 const WHEEL_NUMBERS = [
     "0", "28", "9", "26", "30", "11", "7", "20", "32", "17", "5", "22", "34", "15", "3", "24", "36", "13", "1",
@@ -79,7 +80,7 @@ async function spinWheel() {
 
     try {
         // Запит до нашого оновленого Python-бекенду
-        const response = await fetch("http://127.0.0.1:8000/roulette/spin", {
+        const response = await fetch(`${BASE_URL}/roulette/spin`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({

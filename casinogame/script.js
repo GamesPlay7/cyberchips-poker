@@ -73,7 +73,7 @@ let gameState = {
     activePlayers: [true, true, true, true]
 };
 
-const BASE_URL = 'https://cyberchips-poker.onrender.com';
+const BASE_URL = "https://cyberchips-poker.onrender.com";
 
 const potDisplay = document.getElementById('total-pot');
 const btnFold = document.getElementById('btn-fold');
