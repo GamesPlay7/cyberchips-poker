@@ -519,19 +519,22 @@ function dealTurn() {
                 updateGameLog("⏳ Дилер відкриває <b>Терн</b> (4-та карта на столі)...");
                 communityCardElements[3].innerHTML = `<span class="${getCardColor(turnCard.suit)}">${turnCard.value}${turnCard.suit}</span>`;
                 communityCardElements[3].className = "w-10 h-14 sm:w-14 sm:h-20 bg-white text-black font-bold rounded-md flex items-center justify-center text-sm sm:text-lg shadow-md animate-card-appear";
-            } // 👈 ОЦЯ ДУЖКА МАЄ ЧІТКО ЗАКРИВАТИ IF
+            } // ЗАКРИВАЄМО IF ТУТ
 
             currentBet = 0;
             updateTableUI();
 
-            // Таймаут для переходу до Ріверу
+            // Автоматичний перехід до Ріверу через таймаут
             setTimeout(() => {
                 updateGameLog("🤖 Боти роблять фінальні чеки на Терні...");
                 setTimeout(dealRiver, 2000);
             }, 1500);
         })
-        .catch(err => console.error(err));
-} // 👈 ОЦЯ ДУЖКА ЗАКРИВАЄ САМУ ФУНКЦІЮ dealTurn
+        .catch(err => {
+            updateGameLog("❌ Помилка під час завантаження Терну з сервера");
+            console.error(err);
+        });
+} // ЗАКРИВАЄМО ФУНКЦІЮ dealTurn
 
 // --- ФУНКЦІЯ ВИКЛАДЕННЯ РІВЕРУ (Бере дані з Python) ---
 function dealRiver() {
@@ -661,10 +664,8 @@ function startBotTurnsAfterPlayerRaise() {
             }
             updateTableUI();
             
-            // Якщо все ок, через 2 секунди відкриваємо наступну карту
-            if (typeof dealTurn === "function") {
-                setTimeout(dealTurn, 2000);
-            }
+            // Після ходів ботів — переходимо до Терну
+            setTimeout(dealTurn, 2000);
         }
     }, 3000);
 }
