@@ -321,34 +321,57 @@ function getCardColor(suit) {
     return (suit === '♥' || suit === '♦') ? 'text-red-500' : 'text-black';
 }
 // Чекаємо завантаження сторінки, щоб прив'язати кліки до кнопок HTML
+// =======================================================
+// ЗАМІНИ СВІЙ БЛОК DOMContentLoaded НА ЦЕЙ ОБ'ЄДНАНИЙ:
+// =======================================================
 document.addEventListener("DOMContentLoaded", () => {
     
-    // Кнопка CHECK / CALL
+    // 1. Кнопка CHECK / CALL (Твій поточний код)
     document.getElementById('btn-check').addEventListener('click', () => {
-        if (!activePlayers.player) return; // якщо ти вже в пас, нічого не робимо
+        if (!activePlayers.player) return; 
 
         if (currentBet === 0) {
-            // Якщо ніхto не ставив — це просто Check (безкоштовний хід)
             updateGameLog("😎 Ти сказав <b>Check</b> (Пропуск ходу).");
         } else {
-            // Якщо є ставка — це Call (зрівнювання)
             let callAmount = currentBet;
             if (userChips >= callAmount) {
                 userChips -= callAmount;
                 currentPot += callAmount;
                 updateGameLog(`😎 Ти сказав <b>Call</b> і зрівняв ставку ${callAmount}$.`);
             } else {
-                // All-in якщо не вистачає фішок
                 currentPot += userChips;
                 updateGameLog(`😎 Ти поставив останні <b>${userChips}$ (All-in)!</b>`);
                 userChips = 0;
             }
         }
         
-        updateTableUI(); // оновлюємо цифри на екрані
-        
-        // Після твого ходу — запускаємо хід ботів!
+        updateTableUI(); 
         setTimeout(startBotTurns, 1500);
+    });
+
+    // 2. Кнопка RAISE (Додаємо її сюди ж, всередину)
+    document.getElementById('btn-raise').addEventListener('click', () => {
+        if (!activePlayers.player) return;
+
+        let raiseInput = parseInt(document.getElementById('raise-amount').value);
+        
+        if (isNaN(raiseInput) || raiseInput < currentBet + 25) {
+            raiseInput = currentBet + 25;
+        }
+
+        if (userChips >= raiseInput) {
+            userChips -= raiseInput;
+            currentPot += raiseInput;
+            currentBet = raiseInput; 
+            
+            updateGameLog(`😎 Ти зробив <b>Raise</b> до <b>${raiseInput}$</b>!`);
+            updateTableUI();
+
+            // Передаємо хід ботам у відповідь на твій Raise
+            setTimeout(startBotTurnsAfterPlayerRaise, 1500);
+        } else {
+            updateGameLog("❌ Недостатньо фішок для такаї ставки!");
+        }
     });
 
 });
@@ -467,5 +490,25 @@ function dealFlop() {
     document.getElementById('bot1-status').innerText = "Думає...";
     document.getElementById('bot2-status').innerText = "Думає...";
     currentBet = 0; 
+    updateTableUI();
+}
+
+// Функція викладення Терну (4-та спільна карта)
+function dealTurn() {
+    updateGameLog("⏳ Дилер відкриває <b>Терн</b> (4-та карта на столі)...");
+
+    const turnCard = deck.pop();
+    const communityCardElements = document.getElementById('community-cards').children;
+
+    if (communityCardElements.length >= 4) {
+        // Відкриваємо саме 4-й блок (індекс 3)
+        communityCardElements[3].innerHTML = `<span class="${getCardColor(turnCard.suit)}">${turnCard.value}${turnCard.suit}</span>`;
+        communityCardElements[3].className = "w-10 h-14 sm:w-14 sm:h-20 bg-white text-black font-bold rounded-md flex items-center justify-center text-sm sm:text-lg shadow-md animate-card-appear";
+    }
+
+    // Скидаємо ставки для нового кола
+    currentBet = 0;
+    document.getElementById('bot1-status').innerText = "Думає...";
+    document.getElementById('bot2-status').innerText = "Думає...";
     updateTableUI();
 }
