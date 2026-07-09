@@ -175,18 +175,18 @@
         // 📍 ОСЬ СЮДИ ВСТАВЛЯЄМО КРОК 2:
         // Функція вибору гри в хабі
         // Функція вибору гри в хабі
-        function selectGame(game) {
-            if (game === 'poker') {
-                document.getElementById('screen-game-selection').classList.add('hidden');
-                document.getElementById('screen-poker-setup').classList.remove('hidden');
+function selectGame(game) {
+    if (game === 'poker') {
+        document.getElementById('screen-game-selection').classList.add('hidden');
+        document.getElementById('screen-poker-setup').classList.remove('hidden');
 
-                document.getElementById('hub-container').classList.remove('max-w-2xl');
-                document.getElementById('hub-container').classList.add('max-w-md');
-            } else if (game === 'roulette') {
-                // Просто перенаправляємо гравця на сторінку рулетки!
-                window.location.href = 'roulette.html';
-            }
-        }
+        document.getElementById('hub-container').classList.remove('max-w-2xl');
+        document.getElementById('hub-container').classList.add('max-w-md');
+    } else if (game === 'roulette') {
+        // Просто перенаправляємо гравця на сторінку рулетки!
+        window.location.href = 'roulette.html';
+    }
+}
 
         // Функція повернення назад до вибору ігор
         function backToHub() {
