@@ -511,27 +511,27 @@ function dealTurn() {
     fetch('https://cyberchips-poker.onrender.com/next_round')
         .then(res => res.json())
         .then(data => {
-            const cards = data.community_cards; // тут вже 4 карти
-            const turnCard = cards[3]; // беремо саме 4-ту карту
+            const cards = data.community_cards; 
+            const turnCard = cards[3]; 
             const communityCardElements = document.getElementById('community-cards').children;
 
             if (communityCardElements.length >= 4 && turnCard) {
                 updateGameLog("⏳ Дилер відкриває <b>Терн</b> (4-та карта на столі)...");
                 communityCardElements[3].innerHTML = `<span class="${getCardColor(turnCard.suit)}">${turnCard.value}${turnCard.suit}</span>`;
                 communityCardElements[3].className = "w-10 h-14 sm:w-14 sm:h-20 bg-white text-black font-bold rounded-md flex items-center justify-center text-sm sm:text-lg shadow-md animate-card-appear";
-            }
+            } // 👈 ОЦЯ ДУЖКА МАЄ ЧІТКО ЗАКРИВАТИ IF
 
             currentBet = 0;
             updateTableUI();
 
-            // Автоматичний перехід до Ріверу через 3.5 секунди
+            // Таймаут для переходу до Ріверу
             setTimeout(() => {
                 updateGameLog("🤖 Боти роблять фінальні чеки на Терні...");
                 setTimeout(dealRiver, 2000);
             }, 1500);
         })
         .catch(err => console.error(err));
-}
+} // 👈 ОЦЯ ДУЖКА ЗАКРИВАЄ САМУ ФУНКЦІЮ dealTurn
 
 // --- ФУНКЦІЯ ВИКЛАДЕННЯ РІВЕРУ (Бере дані з Python) ---
 function dealRiver() {
