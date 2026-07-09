@@ -519,30 +519,26 @@ function dealTurn() {
                 updateGameLog("⏳ Дилер відкриває <b>Терн</b> (4-та карта на столі)...");
                 communityCardElements[3].innerHTML = `<span class="${getCardColor(turnCard.suit)}">${turnCard.value}${turnCard.suit}</span>`;
                 communityCardElements[3].className = "w-10 h-14 sm:w-14 sm:h-20 bg-white text-black font-bold rounded-md flex items-center justify-center text-sm sm:text-lg shadow-md animate-card-appear";
-            } // ЗАКРИВАЄМО IF ТУТ
+            }
 
             currentBet = 0;
             updateTableUI();
 
-            // Автоматичний перехід до Ріверу через таймаут
             setTimeout(() => {
                 updateGameLog("🤖 Боти роблять фінальні чеки на Терні...");
                 setTimeout(dealRiver, 2000);
             }, 1500);
         })
-        .catch(err => {
-            updateGameLog("❌ Помилка під час завантаження Терну з сервера");
-            console.error(err);
-        });
-} // ЗАКРИВАЄМО ФУНКЦІЮ dealTurn
+        .catch(err => console.error(err));
+}
 
-// --- ФУНКЦІЯ ВИКЛАДЕННЯ РІВЕРУ (Бере дані з Python) ---
+// --- ФУНКЦІЯ ВИКЛАДЕННЯ РІВЕРУ ---
 function dealRiver() {
     fetch('https://cyberchips-poker.onrender.com/next_round')
         .then(res => res.json())
         .then(data => {
-            const cards = data.community_cards; // тут всі 5 карт
-            const riverCard = cards[4]; // беремо 5-ту карту
+            const cards = data.community_cards; 
+            const riverCard = cards[4]; 
             const communityCardElements = document.getElementById('community-cards').children;
 
             if (communityCardElements.length >= 5 && riverCard) {
@@ -554,7 +550,6 @@ function dealRiver() {
             currentBet = 0;
             updateTableUI();
 
-            // Переходимо до фіналу та підрахунку комбінацій Python-сервером
             setTimeout(determineWinner, 3000);
         })
         .catch(err => console.error(err));
@@ -664,7 +659,6 @@ function startBotTurnsAfterPlayerRaise() {
             }
             updateTableUI();
             
-            // Після ходів ботів — переходимо до Терну
             setTimeout(dealTurn, 2000);
         }
     }, 3000);
