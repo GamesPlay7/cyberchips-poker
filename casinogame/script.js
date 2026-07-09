@@ -504,11 +504,80 @@ function dealTurn() {
         // Відкриваємо саме 4-й блок (індекс 3)
         communityCardElements[3].innerHTML = `<span class="${getCardColor(turnCard.suit)}">${turnCard.value}${turnCard.suit}</span>`;
         communityCardElements[3].className = "w-10 h-14 sm:w-14 sm:h-20 bg-white text-black font-bold rounded-md flex items-center justify-center text-sm sm:text-lg shadow-md animate-card-appear";
+    } // 📍 ОЦЯ ДУЖКА ЗАКРИВАЄ IF
+
+    // 📍 ТАЙМАУТ МАЄ СТОЯТИ ТУТ (ПІСЛЯ IF, АЛЕ ВСЕРЕДИНІ ФУНКЦІЇ):
+    setTimeout(() => {
+        updateGameLog("🤖 Боти роблять фінальні чеки на Терні...");
+        setTimeout(dealRiver, 2000); 
+    }, 1500);
+} // 📍 ОЦЯ ДУЖКА ЗАКРИВАЄ САМУ ФУНКЦІЮ dealTurn
+
+// Функція викладення Ріверу (5-та й остання спільна карта)
+function dealRiver() {
+    updateGameLog("⏳ Дилер відкриває <b>Рівер</b> (остання карта на столі!)...");
+
+    const riverCard = deck.pop();
+    const communityCardElements = document.getElementById('community-cards').children;
+
+    if (communityCardElements.length >= 5) {
+        // Відкриваємо 5-й блок (індекс 4)
+        communityCardElements[4].innerHTML = `<span class="${getCardColor(riverCard.suit)}">${riverCard.value}${riverCard.suit}</span>`;
+        communityCardElements[4].className = "w-10 h-14 sm:w-14 sm:h-20 bg-white text-black font-bold rounded-md flex items-center justify-center text-sm sm:text-lg shadow-md animate-card-appear";
     }
 
-    // Скидаємо ставки для нового кола
     currentBet = 0;
-    document.getElementById('bot1-status').innerText = "Думає...";
-    document.getElementById('bot2-status').innerText = "Думає...";
     updateTableUI();
+
+    // Через 3 секунди після Ріверу автоматично переходимо до визначення переможця!
+    setTimeout(determineWinner, 3000);
+}
+
+function determineWinner() {
+    updateGameLog("🏁 <b>Шоудаун!</b> Відкриття карт...");
+
+    // Тимчасова випадкова логіка, поки не підключили оцінювач комбінацій
+    const players = ['player', 'bot1', 'bot2'];
+    const activeInRound = players.filter(p => activePlayers[p]);
+    const winner = activeInRound[Math.floor(Math.random() * activeInRound.length)];
+
+    if (winner === 'player') {
+        userChips += currentPot;
+        updateGameLog(`🎉 <b>Ти переміг у цьому раунді!</b> Забираєш банк: <span class='text-green-400 font-bold'>${currentPot}$</span>`);
+        triggerBotSpeech('bot2', 'Гарна рука, вітаю...', 3000);
+    } else if (winner === 'bot1') {
+        botStacks.bot1 += currentPot;
+        updateGameLog(`😢 <b>Бот 1 (Агр)</b> переміг і забрав банк: <b>${currentPot}$</b>`);
+        triggerBotSpeech('bot1', 'Забираю фішечки, є бой! 😎', 3000);
+    } else {
+        botStacks.bot2 += currentPot;
+        updateGameLog(`😢 <b>Бот 2 (Профі)</b> переміг і забрав банк: <b>${currentPot}$</b>`);
+        triggerBotSpeech('bot2', 'Чистий розрахунок математики.', 3000);
+    }
+
+    // Обнуляємо банк гри
+    currentPot = 0;
+    currentBet = 0;
+    updateTableUI();
+
+    updateGameLog("🔄 Через 5 секунд розпочнеться новий раунд роздачі...");
+    
+    // Перезапуск гри на новий раунд
+    setTimeout(() => {
+        // Скидаємо активність гравців
+        activePlayers.player = true;
+        activePlayers.bot1 = true;
+        activePlayers.bot2 = true;
+        
+        // Очищаємо стіл (повертаємо сірі заглушки)
+        const communityCardElements = document.getElementById('community-cards').children;
+        for (let i = 0; i < communityCardElements.length; i++) {
+            let name = i < 3 ? `Flop ${i+1}` : (i === 3 ? 'Turn' : 'River');
+            communityCardElements[i].innerHTML = name;
+            communityCardElements[i].className = "w-10 h-14 sm:w-14 sm:h-20 bg-white/10 rounded-md border border-dashed border-white/30 flex items-center justify-center text-gray-500 text-[10px] sm:text-xs transition-all";
+        }
+        
+        // Стартуємо нове коло!
+        startNewRound();
+    }, 5000);
 }
