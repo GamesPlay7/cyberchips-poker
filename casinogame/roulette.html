@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CyberChips — Американська Рулетка</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="roulette.css">
+</head>
+<body class="bg-gray-900 text-white flex flex-col items-center justify-center min-h-screen p-4">
+
+    <h1 class="text-3xl font-black text-yellow-400 mb-8 text-center uppercase tracking-wider">🎰 Американська Рулетка</h1>
+
+    <div class="wheel-wrapper relative flex items-center justify-center mb-8">
+        <div class="pointer absolute top-[-15px] z-10 w-0 h-0 border-l-[15px] border-l-transparent border-r-[15px] border-r-transparent border-t-[30px] border-t-yellow-400"></div>
+        
+        <div id="roulette-wheel" class="w-80 h-80 sm:w-96 sm:h-96 rounded-full border-4 border-yellow-500 shadow-2xl relative overflow-hidden bg-green-800 transition-transform duration-[5s] ease-out">
+            </div>
+        
+        <div class="absolute w-16 h-16 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-full border-2 border-gray-900 shadow-md flex items-center justify-center font-black text-gray-900 text-xs">CYBER</div>
+    </div>
+
+    <div class="w-full max-w-md bg-gray-800 p-6 rounded-xl border border-gray-700 shadow-lg text-center">
+        <div class="mb-4 text-xl font-bold text-gray-300">Твій баланс: <span id="balance-display" class="text-yellow-400">1000$</span></div>
+
+        <div class="mb-4">
+            <label class="block text-gray-400 text-sm mb-1">Сума ставки ($):</label>
+            <input type="number" id="bet-amount" value="50" min="1" class="w-full bg-gray-700 text-white text-center font-bold py-2 rounded-lg border border-gray-600 focus:outline-none focus:border-yellow-400">
+        </div>
+
+        <div class="grid grid-cols-2 gap-3 mb-6">
+            <button onclick="setBetType('red')" id="bet-red" class="bg-red-600 hover:bg-red-700 font-bold py-3 rounded-lg border-2 border-transparent transition-all">🔴 Червоне (x2)</button>
+            <button onclick="setBetType('black')" id="bet-black" class="bg-gray-900 hover:bg-black font-bold py-3 rounded-lg border-2 border-transparent transition-all">⚫ Чорне (x2)</button>
+            <button onclick="setBetType('even')" id="bet-even" class="bg-blue-600 hover:bg-blue-700 font-bold py-2 rounded-lg border-2 border-transparent transition-all">Парне (x2)</button>
+            <button onclick="setBetType('odd')" id="bet-odd" class="bg-indigo-600 hover:bg-indigo-700 font-bold py-2 rounded-lg border-2 border-transparent transition-all">Непарне (x2)</button>
+        </div>
+
+        <div class="mb-6 bg-gray-700/50 p-3 rounded-lg border border-gray-600">
+            <label class="block text-gray-400 text-xs mb-1">Або постав на число (0, 00 або 1-36) за коефіцієнт x36! 🔥</label>
+            <input type="text" id="bet-number-val" placeholder="Наприклад: 23 чи 00" class="w-1/2 bg-gray-800 text-center text-sm py-1.5 rounded border border-gray-600 focus:outline-none focus:border-yellow-400 uppercase font-bold">
+        </div>
+
+        <button id="spin-btn" onclick="spinWheel()" class="w-full bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-black py-4 rounded-xl text-lg uppercase tracking-wider transition-transform active:scale-95 shadow-lg shadow-yellow-500/20">Крутити колесо! 🚀</button>
+    </div>
+
+    <div id="roulette-log" class="mt-6 w-full max-w-md bg-black/40 p-4 rounded-lg border border-gray-800 h-28 overflow-y-auto text-xs text-gray-400 font-mono">
+        <div>• Ласкаво просимо до Американської Рулетки! Оберіть ставку.</div>
+    </div>
+
+    <script src="roulette.js"></script>
+</body>
+</html>

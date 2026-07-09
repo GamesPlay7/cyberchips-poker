@@ -1,0 +1,36 @@
+/* roulette.css */
+
+/* Контейнер колеса */
+#roulette-wheel {
+    position: relative;
+}
+
+/* Кожен окремий сектор на колесі */
+.wheel-sector {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    width: 34px; /* ширина шматочка на краю */
+    height: 50%; /* йде від центру до краю */
+    margin-left: -17px;
+    transform-origin: bottom center; /* повертаємо відносно центру колеса */
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding-top: 10px;
+    font-weight: 900;
+    font-size: 11px;
+    color: white;
+    clip-path: polygon(0 0, 100% 0, 56% 100%, 44% 100%); /* робимо сектор трикутним */
+}
+
+/* Кольори секторів */
+.sector-red { bg-color: #dc2626; background: #dc2626; }
+.sector-black { bg-color: #1a1a1a; background: #1a1a1a; }
+.sector-green { bg-color: #16a34a; background: #15803d; }
+
+/* Виділення активного вибору типу ставки */
+.active-bet {
+    border-color: #facc15 !important;
+    box-shadow: 0 0 10px rgba(250, 204, 21, 0.5);
+}
