@@ -287,33 +287,40 @@ function initBotGreetings() {
 // 3. Запуск нового раунду роздачі
 // Оновлена функція роздачі у твойому script.js
 function startNewRound() {
-    createDeck();
-    shuffleDeck();
-
-    updateGameLog("🃏 Дилер роздає карти...");
-
-    // Видаємо дві карти гравцю
-    const playerCard1 = deck.pop();
-    const playerCard2 = deck.pop();
-
-    // Відображаємо карти гравця на екрані
-    const playerCardElements = document.getElementById('player-cards').children;
-    if (playerCardElements.length >= 2) {
-        // Оновлюємо контент
-        playerCardElements[0].innerHTML = `<span class="${getCardColor(playerCard1.suit)}">${playerCard1.value}${playerCard1.suit}</span>`;
-        playerCardElements[1].innerHTML = `<span class="${getCardColor(playerCard2.suit)}">${playerCard2.value}${playerCard2.suit}</span>`;
-        
-        // Вішаємо анімацію, яка підстрибне рівно 2 рази і затихне
-        playerCardElements[0].classList.add('animate-card-appear');
-        playerCardElements[1].classList.add('animate-card-appear');
-    }
-
-    // Змінюємо статус ботів на активний
-    document.getElementById('bot1-status').innerText = "Думає...";
-    document.getElementById('bot2-status').innerText = "Думає...";
-    document.getElementById('bot3-status').innerText = "Думає...";
+    updateGameLog("🃏 Дилер тасує колоду на сервері...");
     
-    updateGameLog("💬 Боти оцінюють свої шанси. Твій хід!");
+    // Робимо запит до твого FastAPI бекенду
+    fetch('https://cyberchips-poker.onrender.com/start_game')
+        .then(res => res.json())
+        .then(data => {
+            // Отримуємо 2 карти гравця, які згенерував і прислав Python
+            const pCards = data.player_cards;
+            
+            // Відображаємо карти гравця на екрані
+            const playerCardElements = document.getElementById('player-cards').children;
+            if (playerCardElements.length >= 2 && pCards.length >= 2) {
+                
+                // Оновлюємо контент картами із сервера, зберігаючи твої стилі
+                playerCardElements[0].innerHTML = `<span class="${getCardColor(pCards[0].suit)}">${pCards[0].value}${pCards[0].suit}</span>`;
+                playerCardElements[1].innerHTML = `<span class="${getCardColor(pCards[1].suit)}">${pCards[1].value}${pCards[1].suit}</span>`;
+                
+                // Вішаємо твою анімацію, яка підстрибне рівно 2 рази і затихне
+                playerCardElements[0].className = "w-14 h-20 bg-white text-black font-bold rounded-md flex items-center justify-center text-lg shadow-md animate-card-appear";
+                playerCardElements[1].className = "w-14 h-20 bg-white text-black font-bold rounded-md flex items-center justify-center text-lg shadow-md animate-card-appear";
+            }
+
+            // Змінюємо статус ботів на активний
+            document.getElementById('bot1-status').innerText = "Думає...";
+            document.getElementById('bot2-status').innerText = "Думає...";
+            document.getElementById('bot3-status').innerText = "Думає...";
+            
+            updateGameLog("🎰 Карти роздано! Боти оцінюють свої шанси. Твій хід!");
+            updateTableUI();
+        })
+        .catch(err => {
+            updateGameLog("❌ Помилка зв'язку з Python-сервером на старті раунду.");
+            console.error(err);
+        });
 }
 
 // Допоміжна функція для кольору масті (червоний для чирви/бубни)
@@ -467,118 +474,197 @@ function startBotTurns() {
 }
 
 // --- Функція викладення Флопу ---
+// --- ФУНКЦІЯ ВИКЛАДЕННЯ ФЛОПУ (Бере дані з Python) ---
 function dealFlop() {
-    updateGameLog("⏳ Дилер відкриває <b>Флоп</b> (перші 3 карти на столі)...");
+    updateGameLog("⏳ Дилер зв'язується із сервером...");
 
-    const flop1 = deck.pop();
-    const flop2 = deck.pop();
-    const flop3 = deck.pop();
+    // Смикаємо твій Python бекенд на Render
+    fetch('https://cyberchips-poker.onrender.com/next_round')
+        .then(res => res.json())
+        .then(data => {
+            // data.community_cards містить перші 3 карти
+            const cards = data.community_cards;
+            const communityCardElements = document.getElementById('community-cards').children;
 
-    const communityCardElements = document.getElementById('community-cards').children;
+            if (communityCardElements.length >= 3 && cards.length >= 3) {
+                updateGameLog("⏳ Дилер відкриває <b>Флоп</b> (перші 3 карти на столі)...");
 
-    if (communityCardElements.length >= 3) {
-        communityCardElements[0].innerHTML = `<span class="${getCardColor(flop1.suit)}">${flop1.value}${flop1.suit}</span>`;
-        communityCardElements[0].className = "w-10 h-14 sm:w-14 sm:h-20 bg-white text-black font-bold rounded-md flex items-center justify-center text-sm sm:text-lg shadow-md animate-card-appear";
+                for (let i = 0; i < 3; i++) {
+                    communityCardElements[i].innerHTML = `<span class="${getCardColor(cards[i].suit)}">${cards[i].value}${cards[i].suit}</span>`;
+                    communityCardElements[i].className = "w-10 h-14 sm:w-14 sm:h-20 bg-white text-black font-bold rounded-md flex items-center justify-center text-sm sm:text-lg shadow-md animate-card-appear";
+                }
+            }
 
-        communityCardElements[1].innerHTML = `<span class="${getCardColor(flop2.suit)}">${flop2.value}${flop2.suit}</span>`;
-        communityCardElements[1].className = "w-10 h-14 sm:w-14 sm:h-20 bg-white text-black font-bold rounded-md flex items-center justify-center text-sm sm:text-lg shadow-md animate-card-appear";
-
-        communityCardElements[2].innerHTML = `<span class="${getCardColor(flop3.suit)}">${flop3.value}${flop3.suit}</span>`;
-        communityCardElements[2].className = "w-10 h-14 sm:w-14 sm:h-20 bg-white text-black font-bold rounded-md flex items-center justify-center text-sm sm:text-lg shadow-md animate-card-appear";
-    }
-
-    document.getElementById('bot1-status').innerText = "Думає...";
-    document.getElementById('bot2-status').innerText = "Думає...";
-    currentBet = 0; 
-    updateTableUI();
+            document.getElementById('bot1-status').innerText = "Думає...";
+            document.getElementById('bot2-status').innerText = "Думає...";
+            currentBet = 0;
+            updateTableUI();
+        })
+        .catch(err => {
+            updateGameLog("❌ Помилка сервера при отриманні Флопу. Перевірте Render.");
+            console.error(err);
+        });
 }
 
-// Функція викладення Терну (4-та спільна карта)
+// --- ФУНКЦІЯ ВИКЛАДЕННЯ ТЕРНУ (Бере дані з Python) ---
 function dealTurn() {
-    updateGameLog("⏳ Дилер відкриває <b>Терн</b> (4-та карта на столі)...");
+    fetch('https://cyberchips-poker.onrender.com/next_round')
+        .then(res => res.json())
+        .then(data => {
+            const cards = data.community_cards; // тут вже 4 карти
+            const turnCard = cards[3]; // беремо саме 4-ту карту
+            const communityCardElements = document.getElementById('community-cards').children;
 
-    const turnCard = deck.pop();
-    const communityCardElements = document.getElementById('community-cards').children;
+            if (communityCardElements.length >= 4 && turnCard) {
+                updateGameLog("⏳ Дилер відкриває <b>Терн</b> (4-та карта на столі)...");
+                communityCardElements[3].innerHTML = `<span class="${getCardColor(turnCard.suit)}">${turnCard.value}${turnCard.suit}</span>`;
+                communityCardElements[3].className = "w-10 h-14 sm:w-14 sm:h-20 bg-white text-black font-bold rounded-md flex items-center justify-center text-sm sm:text-lg shadow-md animate-card-appear";
+            }
 
-    if (communityCardElements.length >= 4) {
-        // Відкриваємо саме 4-й блок (індекс 3)
-        communityCardElements[3].innerHTML = `<span class="${getCardColor(turnCard.suit)}">${turnCard.value}${turnCard.suit}</span>`;
-        communityCardElements[3].className = "w-10 h-14 sm:w-14 sm:h-20 bg-white text-black font-bold rounded-md flex items-center justify-center text-sm sm:text-lg shadow-md animate-card-appear";
-    } // 📍 ОЦЯ ДУЖКА ЗАКРИВАЄ IF
+            currentBet = 0;
+            updateTableUI();
 
-    // 📍 ТАЙМАУТ МАЄ СТОЯТИ ТУТ (ПІСЛЯ IF, АЛЕ ВСЕРЕДИНІ ФУНКЦІЇ):
-    setTimeout(() => {
-        updateGameLog("🤖 Боти роблять фінальні чеки на Терні...");
-        setTimeout(dealRiver, 2000); 
-    }, 1500);
-} // 📍 ОЦЯ ДУЖКА ЗАКРИВАЄ САМУ ФУНКЦІЮ dealTurn
-
-
-// --- Функція викладення Ріверу (5-та й остання спільна карта) ---
-function dealRiver() {
-    updateGameLog("⏳ Дилер відкриває <b>Рівер</b> (остання карта на столі!)...");
-
-    const riverCard = deck.pop();
-    const communityCardElements = document.getElementById('community-cards').children;
-
-    if (communityCardElements.length >= 5) {
-        // Відкриваємо 5-й блок (індекс 4)
-        communityCardElements[4].innerHTML = `<span class="${getCardColor(riverCard.suit)}">${riverCard.value}${riverCard.suit}</span>`;
-        communityCardElements[4].className = "w-10 h-14 sm:w-14 sm:h-20 bg-white text-black font-bold rounded-md flex items-center justify-center text-sm sm:text-lg shadow-md animate-card-appear";
-    }
-
-    currentBet = 0;
-    updateTableUI();
-
-    // Через 3 секунди після Ріверу автоматично переходимо до визначення переможця
-    if (typeof determineWinner === "function") {
-        setTimeout(determineWinner, 3000);
-    } else {
-        updateGameLog("⚠️ Помилка: Функція determineWinner не знайдена в script.js");
-    }
+            // Автоматичний перехід до Ріверу через 3.5 секунди
+            setTimeout(() => {
+                updateGameLog("🤖 Боти роблять фінальні чеки на Терні...");
+                setTimeout(dealRiver, 2000);
+            }, 1500);
+        })
+        .catch(err => console.error(err));
 }
 
-// --- Тимчасова функція визначення переможця ---
+// --- ФУНКЦІЯ ВИКЛАДЕННЯ РІВЕРУ (Бере дані з Python) ---
+function dealRiver() {
+    fetch('https://cyberchips-poker.onrender.com/next_round')
+        .then(res => res.json())
+        .then(data => {
+            const cards = data.community_cards; // тут всі 5 карт
+            const riverCard = cards[4]; // беремо 5-ту карту
+            const communityCardElements = document.getElementById('community-cards').children;
+
+            if (communityCardElements.length >= 5 && riverCard) {
+                updateGameLog("⏳ Дилер відкриває <b>Рівер</b> (остання карта на столі!)...");
+                communityCardElements[4].innerHTML = `<span class="${getCardColor(riverCard.suit)}">${riverCard.value}${riverCard.suit}</span>`;
+                communityCardElements[4].className = "w-10 h-14 sm:w-14 sm:h-20 bg-white text-black font-bold rounded-md flex items-center justify-center text-sm sm:text-lg shadow-md animate-card-appear";
+            }
+
+            currentBet = 0;
+            updateTableUI();
+
+            // Переходимо до фіналу та підрахунку комбінацій Python-сервером
+            setTimeout(determineWinner, 3000);
+        })
+        .catch(err => console.error(err));
+}
+
+// --- ФУНКЦІЯ ВИЗНАЧЕННЯ ПЕРЕМОЖЦЯ (Запит до розрахунків Python) ---
 function determineWinner() {
-    updateGameLog("🏁 <b>Шоудаун!</b> Відкриття карт...");
+    updateGameLog("🏁 <b>Шоудаун!</b> Сервер вираховує комбінації...");
 
-    const players = ['player', 'bot1', 'bot2'];
-    const activeInRound = players.filter(p => activePlayers[p]);
-    const winner = activeInRound[Math.floor(Math.random() * activeInRound.length)];
+    fetch('https://cyberchips-poker.onrender.com/determine_winner')
+        .then(res => res.json())
+        .then(data => {
+            // Отримуємо з Python красивий готовий текст переможця
+            const winnerText = data.winner_text;
+            const winnerId = data.winner; // 'player', 'bot1', 'bot2' або 'bot3'
 
-    if (winner === 'player') {
-        userChips += currentPot;
-        updateGameLog(`🎉 <b>Ти переміг у цьому раунді!</b> Забираєш банк: <span class='text-green-400 font-bold'>${currentPot}$</span>`);
-        if (typeof triggerBotSpeech === "function") triggerBotSpeech('bot2', 'Гарна рука, вітаю...', 3000);
-    } else if (winner === 'bot1') {
-        botStacks.bot1 += currentPot;
-        updateGameLog(`😢 <b>Бот 1 (Агр)</b> переміг і забрав банк: <b>${currentPot}$</b>`);
-        if (typeof triggerBotSpeech === "function") triggerBotSpeech('bot1', 'Забираю фішечки, є бой! 😎', 3000);
-    } else {
-        botStacks.bot2 += currentPot;
-        updateGameLog(`😢 <b>Бот 2 (Профі)</b> переміг і забрав банк: <b>${currentPot}$</b>`);
-        if (typeof triggerBotSpeech === "function") triggerBotSpeech('bot2', 'Чистий розрахунок математики.', 3000);
-    }
+            // Зараховуємо фішки переможцю на фронтенді
+            if (winnerId === 'player') {
+                userChips += currentPot;
+            } else if (winnerId === 'bot1') {
+                botStacks.bot1 += currentPot;
+            } else if (winnerId === 'bot2') {
+                botStacks.bot2 += currentPot;
+            } else if (winnerId === 'bot3') {
+                if (!botStacks.bot3) botStacks.bot3 = 1000; // на випадок якщо бот3 не був створений
+                botStacks.bot3 += currentPot;
+            }
 
-    // Обнуляємо банк гри
-    currentPot = 0;
-    currentBet = 0;
-    updateTableUI();
+            // Виводимо в лог крутий вердикт сервера
+            updateGameLog(`<span class="text-yellow-400 font-bold">${winnerText}</span>`);
+            
+            if (winnerId === 'player') {
+                if (typeof triggerBotSpeech === "function") triggerBotSpeech('bot2', 'Гарна комбінація, я пасую перед цим.', 3000);
+            } else {
+                if (typeof triggerBotSpeech === "function") triggerBotSpeech(winnerId, 'Є бооой! Сервер підтвердив мою перемогу! 😎', 3000);
+            }
 
-    updateGameLog("🔄 Через 5 секунд розпочнеться новий раунд роздачі...");
-    
+            // Скидаємо банк
+            currentPot = 0;
+            currentBet = 0;
+            updateTableUI();
+
+            updateGameLog("🔄 Через 6 секунд розпочнеться новий раунд...");
+
+            // Перезапуск столу
+            setTimeout(() => {
+                activePlayers.player = true;
+                activePlayers.bot1 = true;
+                activePlayers.bot2 = true;
+                
+                const communityCardElements = document.getElementById('community-cards').children;
+                for (let i = 0; i < communityCardElements.length; i++) {
+                    let name = i < 3 ? `Flop ${i+1}` : (i === 3 ? 'Turn' : 'River');
+                    communityCardElements[i].innerHTML = name;
+                    communityCardElements[i].className = "w-10 h-14 sm:w-14 sm:h-20 bg-white/10 rounded-md border border-dashed border-white/30 flex items-center justify-center text-gray-500 text-[10px] sm:text-xs transition-all";
+                }
+                
+                // ТУТ ВАЖЛИВО: новий раунд теж має починатися з виклику старту на Python!
+                if (typeof startNewRound === "function") {
+                    startNewRound();
+                }
+            }, 6000);
+        })
+        .catch(err => console.error(err));
+}
+
+// Функція відповіді ботів на підвищення ставки гравцем
+// --- Логіка відповіді ботів на твій Raise ---
+function startBotTurnsAfterPlayerRaise() {
+    updateGameLog("🤖 Боти обмірковують твою ставку...");
+
+    // Бот 1 (Агресор)
     setTimeout(() => {
-        activePlayers.player = true;
-        activePlayers.bot1 = true;
-        activePlayers.bot2 = true;
-        
-        const communityCardElements = document.getElementById('community-cards').children;
-        for (let i = 0; i < communityCardElements.length; i++) {
-            let name = i < 3 ? `Flop ${i+1}` : (i === 3 ? 'Turn' : 'River');
-            communityCardElements[i].innerHTML = name;
-            communityCardElements[i].className = "w-10 h-14 sm:w-14 sm:h-20 bg-white/10 rounded-md border border-dashed border-white/30 flex items-center justify-center text-gray-500 text-[10px] sm:text-xs transition-all";
+        if (activePlayers.bot1) {
+            if (botStacks.bot1 >= currentBet) {
+                botStacks.bot1 -= currentBet;
+                currentPot += currentBet;
+                document.getElementById('bot1-status').innerText = "Call";
+                if (typeof triggerBotSpeech === "function") {
+                    triggerBotSpeech('bot1', 'Приймаю виклик, Call!', 2500);
+                }
+                updateGameLog("🤖 <b>Бот 1 (Агр)</b> сказав Call.");
+            } else {
+                activePlayers.bot1 = false;
+                document.getElementById('bot1-status').innerText = "Fold";
+                updateGameLog("🤖 <b>Бот 1 (Агр)</b> скинув карти (Fold).");
+            }
+            updateTableUI();
         }
-        
-        startNewRound();
-    }, 5000);
+    }, 1500);
+
+    // Бот 2 (Профі)
+    setTimeout(() => {
+        if (activePlayers.bot2) {
+            if (currentBet > 300) { 
+                activePlayers.bot2 = false;
+                document.getElementById('bot2-status').innerText = "Fold";
+                if (typeof triggerBotSpeech === "function") {
+                    triggerBotSpeech('bot2', 'Це занадто дорого для моїх карт. Пас.', 2500);
+                }
+                updateGameLog("🤖 <b>Бот 2 (Профі)</b> скинув карти (Fold).");
+            } else {
+                botStacks.bot2 -= currentBet;
+                currentPot += currentBet;
+                document.getElementById('bot2-status').innerText = "Call";
+                updateGameLog("🤖 <b>Бот 2 (Профі)</b> сказав Call.");
+            }
+            updateTableUI();
+            
+            // Якщо все ок, через 2 секунди відкриваємо наступну карту
+            if (typeof dealTurn === "function") {
+                setTimeout(dealTurn, 2000);
+            }
+        }
+    }, 3000);
 }
