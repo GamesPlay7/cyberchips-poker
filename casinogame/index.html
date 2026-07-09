@@ -37,22 +37,20 @@
 
             <!-- ЕКРАН 1: ВИБІР ІГОР -->
             <div id="screen-game-selection" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <!-- Картка 1: Покер -->
-                <div onclick="selectGame('poker')" class="bg-slate-950 border border-slate-700 hover:border-yellow-500 rounded-2xl p-5 text-left cursor-pointer transition-all hover:scale-[1.02] group shadow-lg">
-                    <div class="text-3xl mb-3 group-hover:animate-bounce">🃏</div>
-                    <h3 class="text-xl font-bold text-yellow-400 mb-1">Texas Hold'em</h3>
-                    <p class="text-xs text-slate-400">Покер проти трьох унікальних ШІ-ботів із системою ставок та чатом.</p>
-                    <span class="inline-block mt-4 text-xs font-bold text-yellow-500 bg-yellow-500/10 px-2 py-1 rounded">Грати зараз</span>
-                </div>
+    <div onclick="selectGame('poker')" class="bg-slate-950 border border-slate-700 hover:border-yellow-500 rounded-2xl p-5 text-left cursor-pointer transition-all hover:scale-[1.02] group shadow-lg">
+        <div class="text-3xl mb-3 group-hover:animate-bounce">🃏</div>
+        <h3 class="text-xl font-bold text-yellow-400 mb-1">Texas Hold'em</h3>
+        <p class="text-xs text-slate-400">Покер проти трьох унікальних ШІ-ботів із системою ставок та чатом.</p>
+        <span class="inline-block mt-4 text-xs font-bold text-yellow-500 bg-yellow-500/10 px-2 py-1 rounded">Грати зараз</span>
+    </div>
 
-                <!-- Картка 2: Блекджек (Заглушка на майбутнє) -->
-                <div onclick="selectGame('blackjack')" class="bg-slate-950/50 border border-slate-800 opacity-60 rounded-2xl p-5 text-left transition-all relative overflow-hidden">
-                    <div class="text-3xl mb-3">🎰</div>
-                    <h3 class="text-xl font-bold text-slate-400 mb-1">Cyber Blackjack</h3>
-                    <p class="text-xs text-slate-500">Класичне 21 проти дилера казино. Збирайте комбінації та подвоюйте ставки.</p>
-                    <span class="inline-block mt-4 text-xs font-bold text-slate-500 bg-slate-800 px-2 py-1 rounded">Скоро у грі</span>
-                </div>
-            </div>
+    <div onclick="selectGame('roulette')" class="bg-slate-950 border border-slate-700 hover:border-yellow-500 rounded-2xl p-5 text-left cursor-pointer transition-all hover:scale-[1.02] group shadow-lg">
+        <div class="text-3xl mb-3 group-hover:animate-bounce">🎰</div>
+        <h3 class="text-xl font-bold text-yellow-400 mb-1">Cyber Roulette</h3>
+        <p class="text-xs text-slate-400">Американська рулетка з подвійним зеро (00), плавним обертанням та великими іксами.</p>
+        <span class="inline-block mt-4 text-xs font-bold text-green-400 bg-green-500/10 px-2 py-1 rounded">Грати зараз</span>
+    </div>
+</div>
 
             <!-- ЕКРАН 2: НАЛАШТУВАННЯ ПОКЕРУ (ПРИХОВАНИЙ ЗА ЗАМОВЧУВАННЯМ) -->
             <div id="screen-poker-setup" class="hidden text-left max-w-md mx-auto">
@@ -176,15 +174,17 @@
 
         // 📍 ОСЬ СЮДИ ВСТАВЛЯЄМО КРОК 2:
         // Функція вибору гри в хабі
+        // Функція вибору гри в хабі
         function selectGame(game) {
             if (game === 'poker') {
                 document.getElementById('screen-game-selection').classList.add('hidden');
                 document.getElementById('screen-poker-setup').classList.remove('hidden');
-                
+
                 document.getElementById('hub-container').classList.remove('max-w-2xl');
                 document.getElementById('hub-container').classList.add('max-w-md');
-            } else if (game === 'blackjack') {
-                alert("Ця гра зараз перебуває в розробці! Повертайтеся згодом 😉");
+            } else if (game === 'roulette') {
+                // Просто перенаправляємо гравця на сторінку рулетки!
+                window.location.href = 'roulette.html';
             }
         }
 
