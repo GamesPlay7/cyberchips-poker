@@ -88,17 +88,24 @@ def start_game():
 
 @app.get("/next_round")
 def next_round():
+    # ЗАХИСТ: Якщо гру не було розпочато або колода порожня — ініціалізуємо її
+    if not game.deck:
+        suits = ['♣', '♦', '♥', '♠']
+        values = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A']
+        game.deck = [Card(suit, value) for suit in suits for value in values]
+        random.shuffle(game.deck)
+
     if game.round_state == "preflop":
         game.round_state = "flop"
-        game.deck.pop()  # Спалюємо
+        if len(game.deck) > 0: game.deck.pop()  # Спалюємо
         game.community_cards = [game.deck.pop(), game.deck.pop(), game.deck.pop()]
     elif game.round_state == "flop":
         game.round_state = "turn"
-        game.deck.pop()  # Спалюємо
+        if len(game.deck) > 0: game.deck.pop()  # Спалюємо
         game.community_cards.append(game.deck.pop())
     elif game.round_state == "turn":
         game.round_state = "river"
-        game.deck.pop()  # Спалюємо
+        if len(game.deck) > 0: game.deck.pop()  # Спалюємо
         game.community_cards.append(game.deck.pop())
     elif game.round_state == "river":
         game.round_state = "showdown"
