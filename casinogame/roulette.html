@@ -7,13 +7,43 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="roulette.css">
 </head>
-<body class="bg-gray-900 text-white flex flex-col items-center justify-center min-h-screen p-4">
+<body class="bg-gray-900 text-white flex flex-col items-center justify-center min-h-screen p-4 relative">
+
+    <div id="auth-modal" class="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
+        <div class="bg-gray-800 border border-gray-700 w-full max-w-sm p-6 rounded-2xl shadow-2xl text-center">
+            <h2 id="auth-title" class="text-2xl font-black text-yellow-400 mb-2 uppercase tracking-wide">Вхід у Казино</h2>
+            <p id="auth-subtitle" class="text-xs text-gray-400 mb-6">Введіть свій нікнейм та пароль для синхронізації балансу</p>
+            
+            <div class="space-y-4 text-left">
+                <div>
+                    <label class="block text-gray-400 text-xs mb-1 font-bold">Нікнейм:</label>
+                    <input type="text" id="auth-username" placeholder="Наприклад: Neo" class="w-full bg-gray-700 text-white px-4 py-2.5 rounded-xl border border-gray-600 focus:outline-none focus:border-yellow-400 font-bold">
+                </div>
+                <div>
+                    <label class="block text-gray-400 text-xs mb-1 font-bold">Пароль:</label>
+                    <input type="password" id="auth-password" placeholder="••••••••" class="w-full bg-gray-700 text-white px-4 py-2.5 rounded-xl border border-gray-600 focus:outline-none focus:border-yellow-400">
+                </div>
+            </div>
+
+            <p id="auth-error" class="text-red-400 text-xs mt-3 font-bold hidden"></p>
+
+            <button id="auth-submit-btn" onclick="handleAuthSubmit()" class="w-full bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-black py-3 rounded-xl mt-6 uppercase tracking-wider transition-all active:scale-95 shadow-lg shadow-yellow-500/10">Увійти 🚀</button>
+            
+            <p class="text-xs text-gray-400 mt-4">
+                <span id="auth-toggle-desc">Ще не маєте акаунту?</span> 
+                <button onclick="toggleAuthMode()" id="auth-toggle-btn" class="text-yellow-400 font-bold underline ml-1 hover:text-yellow-300">Зареєструватися</button>
+            </p>
+        </div>
+    </div>
 
     <h1 class="text-3xl font-black text-yellow-400 mb-6 text-center uppercase tracking-wider">🎰 Американська Рулетка</h1>
 
     <div id="profile-panel" class="w-full max-w-md bg-gray-800/80 border border-gray-700 p-4 rounded-xl shadow-md text-center mb-6">
-        <p class="text-lg font-medium">Гравець: <span id="user-name" class="font-black text-yellow-400">Завантаження...</span></p>
-        <p class="text-sm text-gray-400 mt-1">
+        <div class="flex justify-between items-center px-2">
+            <p class="text-base font-medium">Гравець: <span id="user-name" class="font-black text-yellow-400">...</span></p>
+            <button onclick="logout()" class="text-xs text-red-400 hover:text-red-300 underline font-bold">Вийти</button>
+        </div>
+        <p class="text-sm text-gray-400 mt-2 border-t border-gray-700/50 pt-2">
             Взято кредитів: <span id="credits-count" class="font-bold text-yellow-500">0</span> 
             (Борг казино: <span id="debt-amount" class="font-bold text-red-400">0$</span>)
         </p>
@@ -26,13 +56,13 @@
         <div class="pointer absolute top-[-15px] z-10 w-0 h-0 border-l-[15px] border-l-transparent border-r-[15px] border-r-transparent border-t-[30px] border-t-yellow-400"></div>
         
         <div id="roulette-wheel" class="w-80 h-80 sm:w-96 sm:h-96 rounded-full border-4 border-yellow-500 shadow-2xl relative overflow-hidden bg-green-800 transition-transform duration-[5s] ease-out">
-            </div>
+        </div>
         
         <div class="absolute w-16 h-16 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-full border-2 border-gray-900 shadow-md flex items-center justify-center font-black text-gray-900 text-xs">CYBER</div>
     </div>
 
     <div class="w-full max-w-md bg-gray-800 p-6 rounded-xl border border-gray-700 shadow-lg text-center">
-        <div class="mb-4 text-xl font-bold text-gray-300">Твій баланс: <span id="balance-display" class="text-yellow-400">1000$</span></div>
+        <div class="mb-4 text-xl font-bold text-gray-300">Твій баланс: <span id="balance-display" class="text-yellow-400">0$</span></div>
 
         <div class="mb-4">
             <label class="block text-gray-400 text-sm mb-1">Сума ставки ($):</label>
