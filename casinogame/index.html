@@ -12,7 +12,7 @@
             box-shadow: inset 0 0 40px rgba(0,0,0,0.6);
         }
 
-        /* ОНОВЛЕНО: Анімація появи карт, яка спрацьовує рівно 2 рази */
+        /* Анімація появи карт */
         @keyframes cardBounce {
             0%, 100% { transform: translateY(0); }
             50% { transform: translateY(-12px); }
@@ -25,7 +25,7 @@
 <body class="bg-gray-900 text-white font-sans min-h-screen flex flex-col justify-between overflow-x-hidden">
 
     <div id="welcome-menu" class="fixed inset-0 bg-slate-950/95 backdrop-blur-md flex items-center justify-center z-50 transition-opacity duration-500">
-        <!-- КАНВАС ХАБУ (МАКСИМАЛЬНА ШИРИНА ДЛЯ КАРТОК ІГОР) -->
+        <!-- КАНВАС ХАБУ -->
         <div id="hub-container" class="bg-slate-900 border border-slate-800 p-6 sm:p-8 rounded-3xl shadow-2xl max-w-2xl w-full mx-4 text-center transition-all duration-300">
             
             <h1 class="text-3xl sm:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-amber-500 to-orange-500 tracking-wider mb-2 animate-pulse">
@@ -37,40 +37,43 @@
 
             <!-- ЕКРАН 1: ВИБІР ІГОР -->
             <div id="screen-game-selection" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-    <div onclick="selectGame('poker')" class="bg-slate-950 border border-slate-700 hover:border-yellow-500 rounded-2xl p-5 text-left cursor-pointer transition-all hover:scale-[1.02] group shadow-lg">
-        <div class="text-3xl mb-3 group-hover:animate-bounce">🃏</div>
-        <h3 class="text-xl font-bold text-yellow-400 mb-1">Texas Hold'em</h3>
-        <p class="text-xs text-slate-400">Покер проти трьох унікальних ШІ-ботів із системою ставок та чатом.</p>
-        <span class="inline-block mt-4 text-xs font-bold text-yellow-500 bg-yellow-500/10 px-2 py-1 rounded">Грати зараз</span>
-    </div>
+                <div onclick="selectGame('poker')" class="bg-slate-950 border border-slate-700 hover:border-yellow-500 rounded-2xl p-5 text-left cursor-pointer transition-all hover:scale-[1.02] group shadow-lg">
+                    <div class="text-3xl mb-3 group-hover:animate-bounce">🃏</div>
+                    <h3 class="text-xl font-bold text-yellow-400 mb-1">Texas Hold'em</h3>
+                    <p class="text-xs text-slate-400">Покер проти трьох унікальних ШІ-ботів із системою ставок та чатом.</p>
+                    <span class="inline-block mt-4 text-xs font-bold text-yellow-500 bg-yellow-500/10 px-2 py-1 rounded">Грати зараз</span>
+                </div>
 
-    <div onclick="selectGame('roulette')" class="bg-slate-950 border border-slate-700 hover:border-yellow-500 rounded-2xl p-5 text-left cursor-pointer transition-all hover:scale-[1.02] group shadow-lg">
-        <div class="text-3xl mb-3 group-hover:animate-bounce">🎰</div>
-        <h3 class="text-xl font-bold text-yellow-400 mb-1">Cyber Roulette</h3>
-        <p class="text-xs text-slate-400">Американська рулетка з подвійним зеро (00), плавним обертанням та великими іксами.</p>
-        <span class="inline-block mt-4 text-xs font-bold text-green-400 bg-green-500/10 px-2 py-1 rounded">Грати зараз</span>
-    </div>
-</div>
+                <div onclick="selectGame('roulette')" class="bg-slate-950 border border-slate-700 hover:border-yellow-500 rounded-2xl p-5 text-left cursor-pointer transition-all hover:scale-[1.02] group shadow-lg">
+                    <div class="text-3xl mb-3 group-hover:animate-bounce">🎰</div>
+                    <h3 class="text-xl font-bold text-yellow-400 mb-1">Cyber Roulette</h3>
+                    <p class="text-xs text-slate-400">Американська рулетка з подвійним зеро (00), плавним обертанням та великими іксами.</p>
+                    <span class="inline-block mt-4 text-xs font-bold text-green-400 bg-green-500/10 px-2 py-1 rounded">Грати зараз</span>
+                </div>
+            </div>
 
-            <!-- ЕКРАН 2: НАЛАШТУВАННЯ ПОКЕРУ (ПРИХОВАНИЙ ЗА ЗАМОВЧУВАННЯМ) -->
+            <!-- ЕКРАН 2: НАЛАШТУВАННЯ ПОКЕРУ -->
             <div id="screen-poker-setup" class="hidden text-left max-w-md mx-auto">
                 <button onclick="backToHub()" class="text-xs font-bold text-slate-400 hover:text-white mb-4 flex items-center gap-1 transition-colors cursor-pointer">
                     ← Назад в Хаб
                 </button>
 
-                <div class="mb-5">
-                    <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Твій нікнейм</label>
-                    <input type="text" id="player-name-input" placeholder="Гравець" maxlength="12"
-                        class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-yellow-500 transition-colors text-center font-bold placeholder-slate-500">
+                <!-- Інформація про синхронізований профіль -->
+                <div class="mb-5 bg-slate-950 border border-slate-800 p-4 rounded-xl text-center">
+                    <p class="text-sm text-slate-400">Авторизований профіль</p>
+                    <p class="text-xl font-black text-yellow-400 mt-1">😎 <span id="setup-username">Завантаження...</span></p>
+                    <p class="text-xs text-slate-500 mt-1">Кредитів взято: <span id="setup-credits" class="text-yellow-600 font-bold">0</span> (Борг: <span id="setup-debt" class="text-red-500">0$</span>)</p>
                 </div>
 
                 <div class="mb-6">
-                    <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Стартовий Стек ($)</label>
-                    <div class="grid grid-cols-3 gap-2">
-                        <button type="button" onclick="setStartingChips(500)" class="chip-btn bg-slate-950 hover:bg-slate-800 border border-slate-700 rounded-xl py-2 text-sm font-bold text-slate-300 transition-all cursor-pointer">500$</button>
-                        <button type="button" onclick="setStartingChips(1000)" class="chip-btn bg-slate-950 hover:bg-slate-800 border-2 border-yellow-500/50 text-yellow-400 rounded-xl py-2 text-sm font-bold transition-all cursor-pointer">1000$</button>
-                        <button type="button" onclick="setStartingChips(2000)" class="chip-btn bg-slate-950 hover:bg-slate-800 border border-slate-700 rounded-xl py-2 text-sm font-bold text-slate-300 transition-all cursor-pointer">2000$</button>
+                    <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Твій баланс у касі ($)</label>
+                    <div class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-white font-black text-center text-xl text-green-400">
+                        <span id="setup-balance">0</span>$
                     </div>
+                    <!-- Прихована кнопка кредиту, якщо баланс нульовий -->
+                    <button id="poker-credit-btn" onclick="takePokerCredit()" class="w-full mt-2 bg-red-600 hover:bg-red-700 text-white text-xs font-black py-2 rounded-lg uppercase tracking-wide hidden transition-all">
+                        💵 Взяти кредит (+1000$)
+                    </button>
                 </div>
 
                 <div class="mb-8">
@@ -102,7 +105,6 @@
             
             <div class="absolute left-4 top-[140px] md:left-8 md:top-1/2 md:-translate-y-1/2 text-center bg-black/50 p-2 md:p-3 rounded-lg border border-red-500/30 w-[125px] md:w-36 z-10">
                 <div id="bot1-bubble" class="absolute -top-12 left-1/2 -translate-x-1/2 bg-white text-black text-[10px] font-semibold px-2 py-1 rounded-md shadow-md opacity-0 pointer-events-none transition-opacity duration-300 whitespace-nowrap after:content-[''] after:absolute after:top-full after:left-1/2 after:-translate-x-1/2 after:border-4 after:border-transparent after:border-t-white">Привіт!</div>
-                
                 <div class="font-bold text-xs md:text-base text-red-400">🤖 Бот 1 (Агр)</div>
                 <div id="bot1-status" class="text-[10px] md:text-xs text-gray-400 italic">Чекає...</div>
                 <div class="text-xs md:text-sm text-yellow-500">1000$</div>
@@ -110,7 +112,6 @@
 
             <div class="absolute left-1/2 -translate-x-1/2 top-4 text-center bg-black/50 p-2 md:p-3 rounded-lg border border-blue-500/30 w-[125px] md:w-36 z-10">
                 <div id="bot2-bubble" class="absolute -bottom-12 left-1/2 -translate-x-1/2 bg-white text-black text-[10px] font-semibold px-2 py-1 rounded-md shadow-md opacity-0 pointer-events-none transition-opacity duration-300 whitespace-nowrap after:content-[''] after:absolute after:bottom-full after:left-1/2 after:-translate-x-1/2 after:border-4 after:border-transparent after:border-b-white">Удачі!</div>
-                
                 <div class="font-bold text-xs md:text-base text-blue-400">🤖 Бот 2 (Профі)</div>
                 <div id="bot2-status" class="text-[10px] md:text-xs text-gray-400 italic">Чекає...</div>
                 <div class="text-xs md:text-sm text-yellow-500">1000$</div>
@@ -118,7 +119,6 @@
 
             <div class="absolute right-4 top-[140px] md:right-8 md:top-1/2 md:-translate-y-1/2 text-center bg-black/50 p-2 md:p-3 rounded-lg border border-purple-500/30 w-[125px] md:w-36 z-10">
                 <div id="bot3-bubble" class="absolute -top-12 left-1/2 -translate-x-1/2 bg-white text-black text-[10px] font-semibold px-2 py-1 rounded-md shadow-md opacity-0 pointer-events-none transition-opacity duration-300 whitespace-nowrap after:content-[''] after:absolute after:top-full after:left-1/2 after:-translate-x-1/2 after:border-4 after:border-transparent after:border-t-white">Погнали!</div>
-                
                 <div class="font-bold text-xs md:text-base text-purple-400">🤖 Бот 3 (Ранд)</div>
                 <div id="bot3-status" class="text-[10px] md:text-xs text-gray-400 italic">Чекає...</div>
                 <div class="text-xs md:text-sm text-yellow-500">1000$</div>
@@ -135,16 +135,15 @@
         </div>
 
         <div class="w-full max-w-4xl bg-gray-950/60 border border-gray-800 rounded-xl p-2 h-16 overflow-y-auto text-xs text-gray-400 shadow-inner" id="game-log">
-            <div>• Ласкаво просимо до CyberChips Poker! Налаштуйте гру в меню.</div>
+            <div>• Ласкаво просимо до CyberChips Poker! Авторизуйтесь через рулетку, якщо ще не зробили цього.</div>
         </div>
     </main>
 
     <footer class="p-6 bg-gray-800 border-t border-gray-700 flex flex-col md:flex-row items-center justify-between gap-6 shadow-2xl">
-        
         <div class="flex items-center gap-4">
             <div class="bg-gray-900 p-3 rounded-lg border border-green-500/30 text-center min-w-[110px]">
-                <div id="player-display-name" class="font-bold text-green-400 text-sm truncate max-w-[100px]">😎 Гравець</div>
-                <div id="player-display-chips" class="text-xl font-black text-yellow-400">1000$</div>
+                <div id="player-display-name" class="font-bold text-green-400 text-sm truncate max-w-[100px]">😎 ...</div>
+                <div id="player-display-chips" class="text-xl font-black text-yellow-400">0$</div>
             </div>
             <div id="player-cards" class="flex gap-2">
                 <div class="w-14 h-20 bg-white text-black font-bold rounded-md flex items-center justify-center text-lg shadow-md">🂟</div>
@@ -169,26 +168,94 @@
     </footer>
 
     <script>
-        let userChips = 1000; 
+        const BASE_URL = "https://cyberchips-poker.onrender.com";
+        let userChips = 0; 
         let botDifficulty = 'normal';
+        let casinoUsername = "";
 
-        // 📍 ОСЬ СЮДИ ВСТАВЛЯЄМО КРОК 2:
-        // Функція вибору гри в хабі
-        // Функція вибору гри в хабі
-function selectGame(game) {
-    if (game === 'poker') {
-        document.getElementById('screen-game-selection').classList.add('hidden');
-        document.getElementById('screen-poker-setup').classList.remove('hidden');
+        // Перевірка сесії з пам'яті браузера при відкритті сторінки
+        async function checkPokerAuth() {
+            casinoUsername = localStorage.getItem("casino_username");
 
-        document.getElementById('hub-container').classList.remove('max-w-2xl');
-        document.getElementById('hub-container').classList.add('max-w-md');
-    } else if (game === 'roulette') {
-        // Просто перенаправляємо гравця на сторінку рулетки!
-        window.location.href = 'roulette.html';
-    }
-}
+            if (!casinoUsername) {
+                alert("🚨 Будь ласка, спочатку авторизуйтесь або створіть акаунт у вікні рулетки!");
+                window.location.href = "roulette.html";
+                return;
+            }
 
-        // Функція повернення назад до вибору ігор
+            // Завантажуємо свіжі дані користувача з бази
+            try {
+                const response = await fetch(`${BASE_URL}/login`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ username: casinoUsername, password: "" })
+                });
+
+                if (!response.ok) {
+                    alert("Помилка авторизації сесії. Перенаправлення на вхід...");
+                    window.location.href = "roulette.html";
+                    return;
+                }
+
+                const data = await response.json();
+                userChips = data.balance;
+
+                // Наповнюємо UI налаштувань
+                document.getElementById('setup-username').innerText = data.username;
+                document.getElementById('setup-balance').innerText = data.balance;
+                document.getElementById('setup-credits').innerText = data.credits_taken;
+                document.getElementById('setup-debt').innerText = `${data.credits_taken * 1000}$`;
+
+                // Якщо баланс нульовий, показуємо кнопку для кредиту
+                if (userChips === 0) {
+                    document.getElementById('poker-credit-btn').classList.remove('hidden');
+                } else {
+                    document.getElementById('poker-credit-btn').classList.add('hidden');
+                }
+
+            } catch (error) {
+                console.error("Помилка зв'язку з базою:", error);
+                alert("Не вдалося синхронізувати баланс із сервером Render.");
+            }
+        }
+
+        // Функція отримання кредиту прямо з меню покеру
+        async function takePokerCredit() {
+            try {
+                const response = await fetch(`${BASE_URL}/take_credit`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ username: casinoUsername })
+                });
+
+                const data = await response.json();
+                if (response.ok) {
+                    alert("💵 Тобі видано кредит 1000$ прямо за покерний стіл!");
+                    userChips = data.balance;
+                    document.getElementById('setup-balance').innerText = data.balance;
+                    document.getElementById('setup-credits').innerText = data.credits_taken;
+                    document.getElementById('setup-debt').innerText = `${data.credits_taken * 1000}$`;
+                    document.getElementById('poker-credit-btn').classList.add('hidden');
+                } else {
+                    alert(data.detail);
+                }
+            } catch (error) {
+                alert("Помилка сервера при отриманні кредиту.");
+            }
+        }
+
+        function selectGame(game) {
+            if (game === 'poker') {
+                document.getElementById('screen-game-selection').classList.add('hidden');
+                document.getElementById('screen-poker-setup').classList.remove('hidden');
+
+                document.getElementById('hub-container').classList.remove('max-w-2xl');
+                document.getElementById('hub-container').classList.add('max-w-md');
+            } else if (game === 'roulette') {
+                window.location.href = 'roulette.html';
+            }
+        }
+
         function backToHub() {
             document.getElementById('screen-poker-setup').classList.add('hidden');
             document.getElementById('screen-game-selection').classList.remove('hidden');
@@ -197,31 +264,19 @@ function selectGame(game) {
             document.getElementById('hub-container').classList.add('max-w-2xl');
         }
 
-        // Твої старі функції (залишаються без змін нижче)
-        function setStartingChips(amount) {
-            userChips = amount;
-            const buttons = document.querySelectorAll('.chip-btn');
-            buttons.forEach(btn => {
-                if (parseInt(btn.innerText) === amount) {
-                    btn.className = "chip-btn bg-slate-950 hover:bg-slate-800 border-2 border-yellow-500/50 text-yellow-400 rounded-xl py-2 text-sm font-bold transition-all cursor-pointer";
-                } else {
-                    btn.className = "chip-btn bg-slate-950 hover:bg-slate-800 border border-slate-700 rounded-xl py-2 text-sm font-bold text-slate-300 transition-all cursor-pointer";
-                }
-            });
-        }
-
         function startGame() {
-            let nameInput = document.getElementById('player-name-input').value.trim();
-            if (nameInput === "") {
-                nameInput = "Гравець";
+            if (userChips <= 0) {
+                alert("У тебе 0$! Візьми кредит перед початком гри.");
+                return;
             }
+
             botDifficulty = document.getElementById('bot-difficulty').value;
             
-            document.getElementById('player-display-name').innerText = "😎 " + nameInput;
+            document.getElementById('player-display-name').innerText = "😎 " + casinoUsername;
             document.getElementById('player-display-chips').innerText = userChips + "$";
             
             const logBox = document.getElementById('game-log');
-            logBox.innerHTML += `<div>• Гру розпочато. Гравець: <b>${nameInput}</b>, Стек: <b>${userChips}$</b>, Складність ШІ: <b>${botDifficulty}</b>.</div>`;
+            logBox.innerHTML += `<div>• Гру розпочато. Гравець: <b>${casinoUsername}</b>, Стек: <b>${userChips}$</b>, Складність ШІ: <b>${botDifficulty}</b>.</div>`;
             logBox.scrollTop = logBox.scrollHeight;
 
             const menu = document.getElementById('welcome-menu');
@@ -244,6 +299,9 @@ function selectGame(game) {
                 }, duration);
             }
         }
+
+        // Запускаємо перевірку профілю при завантаженні сторінки хабу/покеру
+        checkPokerAuth();
     </script>
     <script src="script.js"></script>
 </body>
