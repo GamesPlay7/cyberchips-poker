@@ -1,8 +1,11 @@
 import random
+import time
 from collections import Counter
-from fastapi import FastAPI, HTTPException
+from datetime import datetime
+import zoneinfo  # Для точного українського часу
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel  # Додали для обробки POST-запитів рулетки
+from pydantic import BaseModel
 
 app = FastAPI()
 
@@ -16,7 +19,52 @@ app.add_middleware(
 )
 
 # ==========================================
-# 🃏 ЛОГІКА ПОКЕРУ (Твій існуючий код)
+# 📊 СИСТЕМА ЛОГУВАННЯ ВІДВІДУВАЧІВ (Нове!)
+# ==========================================
+
+@app.middleware("http")
+async def log_visitor_activity(request: Request, call_next):
+    # 1. Визначаємо точний час запиту за Києвом
+    ukraine_tz = zoneinfo.ZoneInfo("Europe/Kyiv")
+    current_time = datetime.now(ukraine_tz).strftime("%Y-%m-%d %H:%M:%S")
+    
+    # 2. Намагаємось отримати реальну IP-адресу користувача (враховуючи проксі Render)
+    forwarded_for = request.headers.get("X-Forwarded-For")
+    if forwarded_for:
+        ip_address = forwarded_for.split(",")[0].strip()
+    else:
+        ip_address = request.client.host if request.client else "Unknown IP"
+        
+    # 3. Отримуємо пристрій / браузер користувача
+    user_agent = request.headers.get("User-Agent", "Unknown Device")
+    
+    # 4. Яку сторінку або ендпоінт викликають
+    endpoint = request.url.path
+    method = request.method
+
+    # Виконуємо сам запит і рахуємо час його обробки
+    start_time = time.time()
+    response = await call_next(request)
+    process_time = round((time.time() - start_time) * 1000, 2) # в мілісекундах
+
+    # Форматуємо красивий рядок логу
+    log_entry = (
+        f"[{current_time}] | IP: {ip_address} | Метод: {method} {endpoint} | "
+        f"Статус: {response.status_code} ({process_time}ms) | Пристрій: {user_agent}\n"
+    )
+
+    # Записуємо лог у файл на сервері
+    with open("casino_visitors.log", "a", encoding="utf-8") as log_file:
+        log_file.write(log_entry)
+
+    # Додатково дублюємо в консоль Render, щоб бачити наживо
+    print(log_entry, end="")
+
+    return response
+
+
+# ==========================================
+# 🃏 ЛОГІКА ПОКЕРУ
 # ==========================================
 
 class Card:
@@ -140,7 +188,7 @@ def determine_winner():
     }
 
 # ==========================================
-# 🎰 ЛОГІКА АМЕРИКАНСЬКОЇ РУЛЕТКИ (Нове!)
+# 🎰 ЛОГІКА АМЕРИКАНСЬКОЇ РУЛЕТКИ
 # ==========================================
 
 AMERICAN_ROULETTE_WHEEL = [
@@ -158,8 +206,8 @@ def get_number_color(num: str) -> str:
     return "red" if num in red_numbers else "black"
 
 class SpinRequest(BaseModel):
-    bet_type: str   # 'red', 'black', 'even', 'odd', 'number'
-    bet_value: str  # для конкретного числа, інакше порожній рядок ""
+    bet_type: str
+    bet_value: str
     bet_amount: int
 
 @app.post("/roulette/spin")
