@@ -9,7 +9,18 @@
 </head>
 <body class="bg-gray-900 text-white flex flex-col items-center justify-center min-h-screen p-4">
 
-    <h1 class="text-3xl font-black text-yellow-400 mb-8 text-center uppercase tracking-wider">🎰 Американська Рулетка</h1>
+    <h1 class="text-3xl font-black text-yellow-400 mb-6 text-center uppercase tracking-wider">🎰 Американська Рулетка</h1>
+
+    <div id="profile-panel" class="w-full max-w-md bg-gray-800/80 border border-gray-700 p-4 rounded-xl shadow-md text-center mb-6">
+        <p class="text-lg font-medium">Гравець: <span id="user-name" class="font-black text-yellow-400">Завантаження...</span></p>
+        <p class="text-sm text-gray-400 mt-1">
+            Взято кредитів: <span id="credits-count" class="font-bold text-yellow-500">0</span> 
+            (Борг казино: <span id="debt-amount" class="font-bold text-red-400">0$</span>)
+        </p>
+        <button id="credit-btn" class="mt-3 bg-red-600 hover:bg-red-700 text-white text-xs font-black py-2 px-4 rounded-lg uppercase tracking-wide transition-all active:scale-95 shadow-lg shadow-red-600/20 hidden">
+            💵 Взяти кредит (+1000$)
+        </button>
+    </div>
 
     <div class="wheel-wrapper relative flex items-center justify-center mb-8">
         <div class="pointer absolute top-[-15px] z-10 w-0 h-0 border-l-[15px] border-l-transparent border-r-[15px] border-r-transparent border-t-[30px] border-t-yellow-400"></div>

@@ -1,13 +1,15 @@
 const BASE_URL = "https://cyberchips-poker.onrender.com";
+
 // Порядок чисел на американському колесі (має збігатися з Python!)
 const WHEEL_NUMBERS = [
     "0", "28", "9", "26", "30", "11", "7", "20", "32", "17", "5", "22", "34", "15", "3", "24", "36", "13", "1",
     "00", "27", "10", "25", "29", "12", "8", "19", "31", "18", "6", "21", "33", "16", "4", "23", "35", "14", "2"
 ];
 
-let currentBalance = 1000;
+const CURRENT_USER = "Player1"; // Фіксований нікнейм для тестів
 let selectedBetType = null;
 let currentRotation = 0; // Стежимо за поточним кутом повороту
+const anglePerSector = 360 / WHEEL_NUMBERS.length; // ~9.47 градусів на один сектор
 
 // Функція визначення кольору для малювання колеса
 function getNumberColor(num) {
@@ -18,30 +20,94 @@ function getNumberColor(num) {
 
 // 1. ГЕНЕРАЦІЯ КОЛЕСА (Малюємо 38 секторів)
 const wheelElement = document.getElementById("roulette-wheel");
-const totalSectors = WHEEL_NUMBERS.length;
-const anglePerSector = 360 / totalSectors; // ~9.47 градусів на один сектор
+if (wheelElement) {
+    WHEEL_NUMBERS.forEach((num, index) => {
+        const sector = document.createElement("div");
+        sector.className = `wheel-sector sector-${getNumberColor(num)}`;
+        
+        // Повертаємо кожен сектор на свій кут
+        const rotateAngle = index * anglePerSector;
+        sector.style.transform = `rotate(${rotateAngle}deg)`;
+        
+        // Текст всередині сектора
+        sector.innerHTML = `<span>${num}</span>`;
+        wheelElement.appendChild(sector);
+    });
+}
 
-WHEEL_NUMBERS.forEach((num, index) => {
-    const sector = document.createElement("div");
-    sector.className = `wheel-sector sector-${getNumberColor(num)}`;
-    
-    // Повертаємо кожен сектор на свій кут
-    const rotateAngle = index * anglePerSector;
-    sector.style.transform = `rotate(${rotateAngle}deg)`;
-    
-    // Текст всередині сектора
-    sector.innerHTML = `<span>${num}</span>`;
-    wheelElement.appendChild(sector);
+// ==================================================
+// 👤 НОВА СИСТЕМА ПРОФІЛЮ ТА СИНХРОНІЗАЦІЇ З БД
+// ==================================================
+
+// Автоматичний вхід/реєстрація при завантаженні сторінки
+async function initUserProfile() {
+    try {
+        let response = await fetch(`${BASE_URL}/login`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ username: CURRENT_USER, password: "testpassword" })
+        });
+
+        if (!response.ok) {
+            // Якщо користувача немає, реєструємо його
+            response = await fetch(`${BASE_URL}/register`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ username: CURRENT_USER, password: "testpassword" })
+            });
+        }
+
+        const data = await response.json();
+        updateProfileUI(data.username, data.balance, data.credits_taken);
+
+    } catch (error) {
+        console.error("Помилка при ініціалізації профілю:", error);
+    }
+}
+
+// Оновлення текстових елементів інтерфейсу
+function updateProfileUI(username, balance, creditsTaken) {
+    document.getElementById("user-name").innerText = username;
+    document.getElementById("balance-display").innerText = `${balance}$`;
+    document.getElementById("credits-count").innerText = creditsTaken;
+    document.getElementById("debt-amount").innerText = `${creditsTaken * 1000}$`;
+
+    // Показуємо кнопку кредиту ТІЛЬКИ якщо баланс впав до 0
+    const creditBtn = document.getElementById("credit-btn");
+    if (balance === 0) {
+        creditBtn.classList.remove("hidden");
+    } else {
+        creditBtn.classList.add("hidden");
+    }
+}
+
+// Слухач події для кнопки "Взяти кредит"
+document.getElementById("credit-btn").addEventListener("click", async () => {
+    try {
+        const response = await fetch(`${BASE_URL}/take_credit`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ username: CURRENT_USER })
+        });
+
+        const data = await response.json();
+        if (response.ok) {
+            alert("💵 Тобі видано кредит 1000$! Твій борг казино збільшився.");
+            updateProfileUI(CURRENT_USER, data.balance, data.credits_taken);
+        } else {
+            alert(data.detail);
+        }
+    } catch (error) {
+        alert("Не вдалося отримати кредит з сервера.");
+    }
 });
+
 
 // 2. ВИБІР ТИПУ СТАВКИ
 function setBetType(type) {
     selectedBetType = type;
-    // Скидаємо підсвітку з усіх кнопок
-    document.querySelectorAll("button[id^='bet-']").forEach(btn => btn.classList.remove("active-bet"));
-    // Додаємо підсвітку активній
-    document.getElementById(`bet-${type}`).classList.add("active-bet");
-    // Очищаємо поле числа, якщо вибрали колір/парність
+    document.querySelectorAll("button[id^='bet-']").forEach(btn => btn.classList.remove("active-bet", "ring-4", "ring-yellow-400"));
+    document.getElementById(`bet-${type}`).classList.add("active-bet", "ring-4", "ring-yellow-400");
     document.getElementById("bet-number-val").value = "";
 }
 
@@ -52,7 +118,6 @@ async function spinWheel() {
     const betNumberVal = document.getElementById("bet-number-val").value.trim();
     const logElement = document.getElementById("roulette-log");
 
-    // Перевірка ставки на число
     let betType = selectedBetType;
     let betValue = "";
     
@@ -70,8 +135,8 @@ async function spinWheel() {
         return;
     }
 
-    if (betAmount > currentBalance || betAmount <= 0) {
-        alert("Недостатньо балансу або неправильна сума ставки!");
+    if (betAmount <= 0) {
+        alert("Введіть правильну суму ставки!");
         return;
     }
 
@@ -79,11 +144,12 @@ async function spinWheel() {
     document.getElementById("spin-btn").disabled = true;
 
     try {
-        // Запит до нашого оновленого Python-бекенду
+        // Надсилаємо запит на сервер із назвою нашого юзера
         const response = await fetch(`${BASE_URL}/roulette/spin`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
+                username: CURRENT_USER, 
                 bet_type: betType,
                 bet_value: betValue,
                 bet_amount: betAmount
@@ -99,21 +165,20 @@ async function spinWheel() {
         }
 
         // --- МАГІЯ ОБЕРТАННЯ ---
-        // Рахуємо кут: щоб число опинилося вгорі (на 12 годин), колесо треба повернути назад
         const targetSectorIndex = data.wheel_index;
         const targetAngle = targetSectorIndex * anglePerSector;
-        
-        // Робимо 5 повних обертів (5 * 360) + крутимо до потрібного сектора (назад, тому мінус)
         const extraRotations = 5 * 360;
+        
         currentRotation += extraRotations - (currentRotation % 360) - targetAngle;
-
         wheelElement.style.transform = `rotate(${currentRotation}deg)`;
 
-        // Чекаємо 5 секунд (поки триває CSS анімація transition-duration-[5s])
+        // Чекаємо 5 секунд, поки колесо крутиться
         setTimeout(() => {
-            // Оновлюємо баланс
-            currentBalance += data.profit;
-            document.getElementById("balance-display").innerText = `${currentBalance}$`;
+            // Беремо поточну кількість кредитів з екрана, щоб UI не скидався
+            const currentCredits = parseInt(document.getElementById("credits-count").innerText);
+            
+            // Оновлюємо інтерфейс даними, що прийшли з бази даних бекенду
+            updateProfileUI(CURRENT_USER, data.new_balance, currentCredits);
 
             // Виводимо результат в лог
             const colorEmoji = data.winning_color === "red" ? "🔴" : data.winning_color === "black" ? "⚫" : "🟢";
@@ -137,3 +202,6 @@ async function spinWheel() {
         document.getElementById("spin-btn").disabled = false;
     }
 }
+
+// Запускаємо профіль при відкритті
+initUserProfile();
